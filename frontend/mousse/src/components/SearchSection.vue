@@ -1,0 +1,180 @@
+<template>
+  <div class="sui-layout">
+    <SearchHeader v-model="searchInputValue" @submit="handleFormSubmit" />
+    <div v-if="searchState.wasSearched" class="sui-layout-body">
+      <div class="sui-layout-body__inner">
+        <div class="sui-layout-sidebar--toggled">
+          <SearchSort v-show="thereAreResults" v-model="sortBy" />
+
+          <SearchFacet
+            :checked="degrees"
+            :facet="searchState.facets.degrees[0]"
+            @change="handleFacetChange($event, 'degrees')"
+          />
+
+          <SearchFacet
+            :checked="cycles"
+            :facet="searchState.facets.cycles[0]"
+            @change="handleFacetChange($event, 'cycles')"
+          />
+
+          <SearchFacet
+            :checked="types"
+            :facet="searchState.facets.types[0]"
+            @change="handleFacetChange($event, 'types')"
+          />
+
+          <SearchFacet
+            :checked="ects"
+            :facet="searchState.facets.ects[0]"
+            @change="handleFacetChange($event, 'ects')"
+          />
+        </div>
+        <div class="sui-layout-main">
+          <div class="sui-layout-main-header">
+            <div class="sui-layout-main-header__inner">
+              <SearchPagingInfo :search-state="searchState" />
+              <SearchResultsPerPage
+                v-show="thereAreResults"
+                v-model.number="resultsPerPage"
+              />
+            </div>
+          </div>
+          <div class="sui-layout-main-body">
+            <SearchResults
+              v-show="thereAreResults"
+              :results="searchState.results"
+              v-model="sortBy"
+            />
+          </div>
+          <div class="sui-layout-main-footer">
+            <SearchPagination
+              v-show="thereAreResults"
+              :total-pages="Math.min(searchState.totalPages, 100)"
+              :click-handler="setCurrentPage"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- FAQ goes here?-->
+  </div>
+</template>
+
+<script>
+import { SearchDriver } from "@elastic/search-ui";
+import config from "../searchConfig";
+import SearchResults from "./SearchResults";
+import SearchFacet from "./SearchFacet";
+import SearchHeader from "./SearchHeader";
+import SearchPagingInfo from "./SearchPagingInfo";
+import SearchPagination from "./SearchPagination";
+import SearchSort from "./SearchSort";
+import SearchResultsPerPage from "./SearchResultsPerPage";
+
+const driver = new SearchDriver(config);
+
+export default {
+  components: {
+    SearchResults,
+    SearchFacet,
+    SearchHeader,
+    SearchPagingInfo,
+    SearchPagination,
+    SearchSort,
+    SearchResultsPerPage
+  },
+  data() {
+    return {
+      searchInputValue: "",
+      searchState: {},
+      cycles: [],
+      types: [],
+      ects: [],
+      degrees: [],
+      resultsPerPage: 20,
+      sortBy: "name"
+    };
+  },
+  computed: {
+    thereAreResults() {
+      return this.searchState.totalResults && this.searchState.totalResults > 0;
+    }
+  },
+  watch: {
+    resultsPerPage(newResultsPerPage) {
+      driver.setResultsPerPage(newResultsPerPage);
+    },
+    sortBy(newSortBy) {
+      if (newSortBy.endsWith("Asc")) {
+        driver.setSort(newSortBy.replace("Asc", ""), "asc");
+      } else {
+        driver.setSort(newSortBy, "desc");
+      }
+    }
+  },
+  mounted() {
+    const {
+      searchTerm,
+      sortField,
+      resultsPerPage,
+      filters
+    } = driver.getState();
+
+    // restoring UI from url query
+    this.searchInputValue = searchTerm;
+    this.sortBy = sortField;
+    this.resultsPerPage = resultsPerPage;
+    filters.forEach(filter => {
+      if (filter.field === "price") { // Use this for range facets
+        this[filter.field] = filter.values.map(value => value.name);
+      } else {
+        this[filter.field] = filter.values;
+      }
+    });
+
+    driver.subscribeToStateChanges(state => {
+      this.searchState = state;
+    });
+  },
+  methods: {
+    handleFormSubmit() {
+      driver.getActions().setSearchTerm(this.searchInputValue);
+    },
+    handleFacetChange(event, facet) {
+
+      const { value, checked } = event.target;
+      const facetFromDriver = driver.getState().facets[facet][0];
+      const valueforApi =
+        facetFromDriver.type === "range"
+          ? facetFromDriver.data.find(item => item.value.name === value).value
+          : value;
+
+      if (checked) {
+        this[facet].push(value);
+        driver.addFilter(facet, valueforApi, "any");
+      } else {
+        const index = this[facet].indexOf(value);
+        if (index > -1) {
+          this[facet].splice(index, 1);
+        }
+        driver.removeFilter(facet, valueforApi, "any");
+      }
+    },
+    setCurrentPage(page) {
+      driver.setCurrent(page);
+    }
+  }
+};
+</script>
+
+<style>
+.sui-layout-main {
+  width: auto !important;
+  min-width: 70%;
+}
+
+.sui-layout-sidebar--toggled {
+  min-width: 29%;
+}
+</style>

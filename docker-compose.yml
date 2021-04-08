@@ -1,0 +1,62 @@
+version: '3.7'
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      MYSQL_DATABASE: moussedb
+      MYSQL_ROOT_PASSWORD: root
+    restart: unless-stopped
+    volumes:
+    - ./backend/data.json:/mousse/data.json
+  certbot:
+    entrypoint: /bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h &
+      wait $${!}; done;'
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+    - ./data/certbot/conf:/etc/letsencrypt:rw
+    - ./data/certbot/www:/var/www/certbot:rw
+  mysql:
+    build: ./mysql
+    command: --default-authentication-plugin=mysql_native_password --sql_mode=""
+    environment:
+      MYSQL_DATABASE: moussedb
+      MYSQL_ROOT_PASSWORD: root
+    restart: unless-stopped
+    volumes:
+    - ./mysql-data:/var/lib/mysql:rw
+  nginx:
+    command: /bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done
+      & nginx -g "daemon off;"'
+    image: nginx:1.19
+    ports:
+    - published: 80
+      target: 80
+    - published: 443
+      target: 443
+    restart: unless-stopped
+    volumes:
+    - ./data/nginx:/etc/nginx/conf.d:rw
+    - ./data/certbot/conf:/etc/letsencrypt:rw
+    - ./data/certbot/www:/var/www/certbot:rw
+  solr:
+    command:
+    - solr-precreate
+    - mousse_core
+    image: solr:8.8.1
+    # ports:
+    # - published: 8983
+      # target: 8983
+    volumes:
+    - data_solr:/opt/solr/server/solr/mousse_core
+    - ./backend/data.json:/data.json
+    command: /bin/sh -c 'while :; do sleep 6h & wait $${!}; /opt/solr-8.8.1/bin/post -c mousse_core /data.json; done'
+  web:
+    build: ./frontend/mousse
+    restart: unless-stopped
+
+volumes:
+  data:
+  data_solr:
+
