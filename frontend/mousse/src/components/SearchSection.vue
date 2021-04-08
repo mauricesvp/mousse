@@ -57,7 +57,12 @@
         </div>
       </div>
     </div>
-    <!-- FAQ goes here?-->
+    <div class="quick_links">
+      <a href="https://freitagsrunde.org/">Freitagsrunde</a>
+      <a href="https://github.com/mauricesvp/mousse">Source</a>
+      <a href="https://tu.berlin">TU Berlin</a>
+      <a href="https://moseskonto.tu-berlin.de/moses/modultransfersystem/index.html">MTS</a>
+    </div>
   </div>
 </template>
 
@@ -172,6 +177,32 @@ export default {
 .sui-layout-main {
   width: auto !important;
   min-width: 70%;
+}
+
+.quick_links {
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-top: 2px solid #336;
+  padding: 1rem 0 2rem 0;
+}
+
+.quick_links > a + a {
+  border-left: 2px solid #336;
+}
+
+.quick_links a {
+  padding: 0 0.5rem;
+  font-size: 1.25rem;
+  text-decoration: none;
+  color: #222;
+  transition-duration: 0.4s;
+}
+
+.quick_links a:hover {
+  font-size: 1.3rem;
+  text-shadow: 2px 2px 4px #aaa;
 }
 
 .sui-layout-sidebar--toggled {

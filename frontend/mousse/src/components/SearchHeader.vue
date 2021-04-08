@@ -1,10 +1,5 @@
 <template>
   <div class="sui-layout-header">
-    <!--
-    <div class="header-text">
-      <a href="/">mousse</a>
-    </div>
-    -->
     <div class="sui-search-box__wrapper">
       <form @submit.prevent="$emit('submit', $event.target.value)">
         <div class="sui-search-box">
