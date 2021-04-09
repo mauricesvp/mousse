@@ -19,6 +19,11 @@ export default {
 @import "../node_modules/@elastic/react-search-ui-views/lib/styles/styles.css";
 @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
 
+html {
+  margin-left: calc(100vw - 100%);
+  margin-right: 0;
+}
+
 body {
   padding: 0;
   margin: 0 auto;
