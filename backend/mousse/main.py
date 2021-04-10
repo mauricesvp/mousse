@@ -7,13 +7,12 @@ import sys
 import time
 
 import bs4
-import requests
 from bs4 import BeautifulSoup as bs
 
 import mousse.db as db
 from mousse.log import setup_logger
 from mousse.stupos import STUPOS
-from mousse.utils import retry
+from mousse.utils import html_get, retry
 
 sys.setrecursionlimit(20000)
 logger = setup_logger("mousse_main")
@@ -27,17 +26,17 @@ SEMESTER_MAPPING = {
 }
 
 
-@retry(5)
-def html_get(url: str, timeout: int = 5) -> requests.Response:
-    return requests.get(url=url, timeout=timeout)
-
-
-def get_modules(semester: str) -> None:
+def get_rows(semester: str) -> list:
     url = degree_url(semester=semester, studiengang="", semesterStudiengang="", mkg="")
     r = html_get(url)
     soup = bs(r.text, "lxml")
     tbody = soup.find_all("tbody")[0]
     rows = tbody.find_all("tr")
+    return rows
+
+
+def get_modules(semester: str) -> None:
+    rows = get_rows(semester)
     res = []
     for row in rows:
         module = process_row(row)
@@ -84,11 +83,15 @@ def get_degree(id: str, stupo: str) -> None:
 
 
 def get_row_info(row: bs4.element.Tag) -> tuple:
-    tds = row.find_all("td")
-    name = tds[3].contents[0].strip()
-    number, version = tds[1].contents[0].split(" ")
-    ects = tds[4].contents[0].strip()
-    language = tds[6].contents[0].strip()
+    try:
+        tds = row.find_all("td")
+        name = tds[3].contents[0].strip()
+        number, version = tds[1].contents[0].split(" ")
+        ects = tds[4].contents[0].strip()
+        language = tds[6].contents[0].strip()
+    except IndexError:
+        print("Error with row:", row)
+        raise
     if number and name and (ects is not None) and (version is not None) and language:
         return number, name, ects, version, language
     return ()
