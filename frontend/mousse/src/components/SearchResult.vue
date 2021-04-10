@@ -72,6 +72,8 @@ export default {
 
 .module_name a {
   text-decoration: none;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
   font-weight: 800;
   color: #000;
   font-size: 1.25rem;
@@ -129,6 +131,10 @@ p {
   .module_info {
     font-size: 0.75rem;
   }
+
+  .fixed_col {
+    width: 4rem;
+  }
 }
 
 /* Small screens */
@@ -143,6 +149,25 @@ p {
 
   .module_info {
     display: none;
+  }
+
+  .module_part {
+    padding: 0.125rem 0;
+  }
+
+  .fixed_col {
+    width: 3rem;
+  }
+}
+
+/* Very small screens */
+@media only screen and (max-width: 576px) {
+  p {
+    font-size: 0.675rem;
+  }
+
+  .module_name a {
+    font-size: 0.75rem;
   }
 }
 </style>
