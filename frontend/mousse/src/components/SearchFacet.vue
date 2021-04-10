@@ -1,42 +1,47 @@
 <template>
   <div v-show="facet.data.length" class="sui-multi-checkbox-facet sui-facet">
-    <div class="sui-facet__title">
-      {{ facet.field }}
+    <div class="facet-header">
+      <div class="sui-facet__title">
+        {{ facet.field }}
+      </div>
+      <button class="sui-facet__title" v-on:click="toggleHide">Hide</button>
     </div>
-    <div v-if="facet.field === 'Degree'" class="sui-facet-search">
-      <input
-        class="sui-facet-search__text-input"
-        type="search"
-        v-on:keyup="filter"
-        placeholder="Search degree.."
-      >
-    </div>
-    <div class="facet-wrapper">
-      <div class="sui-multi-checkbox-facet__option-input-wrapper">
-        <div class="facets_sticky">
-        </div>
-        <div class="non_facets_sticky">
-            <label
-              v-for="facetItem in facet.data"
-              :key="facetItem.value"
-              class="sui-multi-checkbox-facet__option-label"
-            >
-              <div class="sui-multi-checkbox-facet__option-input-wrapper">
-                <input
-                  class="sui-multi-checkbox-facet__checkbox"
-                  type="checkbox"
-                  :value="getValue(facetItem, facet.type)"
-                  :checked="isChecked(getValue(facetItem, facet.type))"
-                  @change="$emit('change', $event); handleSticky($event)"
-                />
-                <span class="sui-multi-checkbox-facet__input-text">{{
-                  getValue(facetItem, facet.type)
+    <div class="facet-hide-wrapper">
+      <div v-if="facet.field === 'Degree'" class="sui-facet-search">
+        <input
+          class="sui-facet-search__text-input"
+          type="search"
+          v-on:keyup="filter"
+          placeholder="Search degree.."
+        >
+      </div>
+      <div class="facet-wrapper">
+        <div class="sui-multi-checkbox-facet__option-input-wrapper">
+          <div class="facets_sticky">
+          </div>
+          <div class="non_facets_sticky">
+              <label
+                v-for="facetItem in facet.data"
+                :key="facetItem.value"
+                class="sui-multi-checkbox-facet__option-label"
+              >
+                <div class="sui-multi-checkbox-facet__option-input-wrapper">
+                  <input
+                    class="sui-multi-checkbox-facet__checkbox"
+                    type="checkbox"
+                    :value="getValue(facetItem, facet.type)"
+                    :checked="isChecked(getValue(facetItem, facet.type))"
+                    @change="$emit('change', $event); handleSticky($event)"
+                  />
+                  <span class="sui-multi-checkbox-facet__input-text">{{
+                    getValue(facetItem, facet.type)
+                  }}</span>
+                </div>
+                <span class="sui-multi-checkbox-facet__option-count">{{
+                  facetItem.count
                 }}</span>
-              </div>
-              <span class="sui-multi-checkbox-facet__option-count">{{
-                facetItem.count
-              }}</span>
-            </label>
+              </label>
+          </div>
         </div>
       </div>
     </div>
@@ -140,6 +145,17 @@ export default {
           // Insert in the right spot
           otherParent.insertBefore(element, otherParent.childNodes[index]);
       }
+    },
+    toggleHide(event) {
+      var button = event.currentTarget;
+      var curr = button.innerHTML;
+      button.innerHTML = curr === "Hide" ? "Show" : "Hide";
+      button.style.fontWeight = (curr === "Hide") ? 700 : 400;
+      var facetRoot = button.parentElement.parentElement;
+      var facetWrapper = facetRoot.getElementsByClassName("facet-hide-wrapper")[0];
+      var curr2 = facetWrapper.style.display;
+      facetWrapper.style.display = curr2 === "none" ? "block" : "none";
+
     }
   }
 };
@@ -148,6 +164,29 @@ export default {
 <style>
 .sui-facet {
   margin-top: 16px !important;
+}
+
+.facet-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.facet-header button {
+  border: none;
+  background: #fff;
+  outline:none;
+}
+
+.facet-header button:hover {
+  cursor: pointer;
+}
+
+.sui-facet__title {
+  text-transform: none !important;
+}
+
+.facet-hide-wrapper {
+  display: block;
 }
 
 .facet-wrapper {

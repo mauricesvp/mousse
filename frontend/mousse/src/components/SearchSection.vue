@@ -35,17 +35,17 @@
           />
 
           <SearchFacet
-            :checked="departments"
-            v-if="searchState.facets.departments"
-            :facet="searchState.facets.departments[0]"
-            @change="handleFacetChange($event, 'departments')"
-          />
-
-          <SearchFacet
             :checked="examtypes"
             v-if="searchState.facets.examtypes"
             :facet="searchState.facets.examtypes[0]"
             @change="handleFacetChange($event, 'examtypes')"
+          />
+
+          <SearchFacet
+            :checked="departments"
+            v-if="searchState.facets.departments"
+            :facet="searchState.facets.departments[0]"
+            @change="handleFacetChange($event, 'departments')"
           />
         </div>
         <div class="sui-layout-main">
@@ -227,6 +227,6 @@ export default {
 }
 
 .sui-layout-sidebar--toggled {
-  min-width: 29%;
+  min-width: 30%;
 }
 </style>
