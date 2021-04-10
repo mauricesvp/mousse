@@ -57,8 +57,11 @@ export default {
   },
   mounted() {
     // Restore pinned labels
+    var valid = ["Degree", "ECTS"];
     var facets = document.getElementsByClassName("sui-multi-checkbox-facet");
     facets.forEach(facet => {
+      var facetName = facet.firstChild.innerHTML.trim();
+      if (!valid.includes(facetName)) return;
       var nonSticky = facet.getElementsByClassName("non_facets_sticky")[0];
       var elements = nonSticky.getElementsByTagName("label");
       var sticky = facet.getElementsByClassName("facets_sticky")[0];
