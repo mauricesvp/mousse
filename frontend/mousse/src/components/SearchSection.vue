@@ -40,6 +40,13 @@
             :facet="searchState.facets.departments[0]"
             @change="handleFacetChange($event, 'departments')"
           />
+
+          <SearchFacet
+            :checked="examtypes"
+            v-if="searchState.facets.examtypes"
+            :facet="searchState.facets.examtypes[0]"
+            @change="handleFacetChange($event, 'examtypes')"
+          />
         </div>
         <div class="sui-layout-main">
           <div class="sui-layout-main-header">
@@ -109,6 +116,7 @@ export default {
       ects: [],
       degrees: [],
       departments: [],
+      examtypes: [],
       resultsPerPage: 20,
       sortBy: "name"
     };

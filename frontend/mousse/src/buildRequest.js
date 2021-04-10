@@ -56,10 +56,14 @@ function buildFilterQuery(filters) {
                 case "departments":
                     field = "faculty";
                     break;
+                case "examtypes":
+                    field = "exam_type_str";
+                    break;
             }
             filter.values.forEach(value => {
                 // For some fields we want to match the full string,
                 // hence why we need to add quotes around the search value (i.e. make solr happy)
+                if (field === "exam_type_str") value = value.toLowerCase();
                 if (field === "degrees.name_degree" || field === "faculty") {
                     value = "\"" + value + "\"";
                 }

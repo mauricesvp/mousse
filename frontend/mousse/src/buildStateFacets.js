@@ -68,6 +68,7 @@ export default function buildStateFacets(aggregations) {
   const ects = getValueFacet(aggregations, "ECTS");
   const degrees = getValueFacet(aggregations, "Degree");
   const departments = getValueFacet(aggregations, "Department");
+  const examtypes = getValueFacet(aggregations, "Exam Type");
 
   // 'ects' is a string field, which is necessary for solr to accept 'mincount=0'.
   // However the values are numbers, so we want them sorted numerically
@@ -82,6 +83,7 @@ export default function buildStateFacets(aggregations) {
     ...(ects && { ects }),
     ...(degrees && { degrees }),
     ...(departments && { departments }),
+    ...(examtypes && { examtypes }),
   };
 
   if (Object.keys(facets).length > 0) {

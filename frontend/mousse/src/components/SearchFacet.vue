@@ -61,6 +61,12 @@ export default {
     var facets = document.getElementsByClassName("sui-multi-checkbox-facet");
     facets.forEach(facet => {
       var facetName = facet.firstChild.innerHTML.trim();
+      if (facetName === "Exam Type") {
+        // This is somewhat hacky tbh
+        var facetContainer = facet.getElementsByClassName("non_facets_sticky")[0];
+        var element = facetContainer.getElementsByTagName("span")[0];
+        element.innerHTML = "PORTFOLIO";
+      }
       if (!valid.includes(facetName)) return;
       var nonSticky = facet.getElementsByClassName("non_facets_sticky")[0];
       var elements = nonSticky.getElementsByTagName("label");
