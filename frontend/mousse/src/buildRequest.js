@@ -30,10 +30,11 @@ function buildMatch(searchTerm) {
 function buildFilterQuery(filters) {
     let fq = "";
     filters.forEach(filter => {
+        // 'price' is a relic from another project
+        // But basically this is how you would add filter queries for range facets
         if (filter.field == "price") {
             fq += "&fq=";
             filter.values.forEach(range => {
-                // Note that "price" is hardcoded for now
                 fq += "+price:[" + (range.from ? range.from : "*") + " TO " + (range.to ? range.to : "*") + "] ";
             });
         } else {
@@ -52,9 +53,14 @@ function buildFilterQuery(filters) {
                 case "degrees":
                     field = "degrees.name_degree";
                     break;
+                case "departments":
+                    field = "faculty";
+                    break;
             }
             filter.values.forEach(value => {
-                if (field === "degrees.name_degree") {
+                // For some fields we want to match the full string,
+                // hence why we need to add quotes around the search value (i.e. make solr happy)
+                if (field === "degrees.name_degree" || field === "faculty") {
                     value = "\"" + value + "\"";
                 }
                 fq += "+" + field + ":" + value;

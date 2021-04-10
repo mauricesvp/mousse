@@ -56,14 +56,18 @@ export default {
     }
   },
   mounted() {
-    var nonSticky = document.getElementsByClassName("non_facets_sticky")[0];
-    var elements = nonSticky.getElementsByTagName("label");
-    var sticky = document.getElementsByClassName("facets_sticky")[0];
-    elements.forEach(element => {
-      var input = element.getElementsByTagName("input")[0];
-      if (input.checked) {
-        sticky.appendChild(element);
-      }
+    // Restore pinned labels
+    var facets = document.getElementsByClassName("sui-multi-checkbox-facet");
+    facets.forEach(facet => {
+      var nonSticky = facet.getElementsByClassName("non_facets_sticky")[0];
+      var elements = nonSticky.getElementsByTagName("label");
+      var sticky = facet.getElementsByClassName("facets_sticky")[0];
+      elements.forEach(element => {
+        var input = element.getElementsByTagName("input")[0];
+        if (input.checked) {
+          sticky.appendChild(element);
+        }
+      });
     });
   },
   methods: {
@@ -92,17 +96,34 @@ export default {
       }
     },
     handleSticky(event) {
-      // Pin selected degrees
-      if (this.facet.field === 'Degree') {
+      function indexOf(element, list) {
+        // Returns index of where element should be placed within list (which is sorted)
+        var tmp = Array.from(list.getElementsByClassName("sui-multi-checkbox-facet__option-label"));
+        var values = tmp.map(e => (e.children[0].children[0].getAttribute("value")));
+        var value = element.children[0].children[0].getAttribute("value");
+        var low = 0;
+        var high = values.length;
+        while (low < high) {
+          var mid = (low + high) >>> 1;
+          if (values[mid] < value) low = mid + 1;
+          else high = mid;
+        }
+        return low;
+      }
+      // Pin selected labels
+      if (this.facet.field === 'Degree' || this.facet.field === 'ECTS') {
         var element = event.currentTarget.parentElement.parentElement;
+        var ourFacet = element.parentElement.parentElement;
         var directParent = element.parentElement;
         var otherParent;
         if (directParent.className !== "non_facets_sticky" && !element.checked) {
-          otherParent = document.getElementsByClassName("non_facets_sticky")[0];
+          otherParent = ourFacet.getElementsByClassName("non_facets_sticky")[0];
         } else {
-          otherParent = document.getElementsByClassName("facets_sticky")[0];
+          otherParent = ourFacet.getElementsByClassName("facets_sticky")[0];
         }
-        otherParent.appendChild(element);
+          var index = indexOf(element, otherParent);
+          // Insert in the right spot
+          otherParent.insertBefore(element, otherParent.childNodes[index]);
       }
     }
   }
@@ -122,7 +143,7 @@ export default {
 .facets_sticky {
   position: sticky;
   background: #eee;
-  top: 0;
+  /*top: 0;*/
 }
 
 .facets_sticky > :last-child {
@@ -130,7 +151,7 @@ export default {
 }
 
 .non_facets_sticky {
-  max-height: 12rem;
+  max-height: 10rem;
   overflow-y: auto;
   overflow-x: hidden;
 }

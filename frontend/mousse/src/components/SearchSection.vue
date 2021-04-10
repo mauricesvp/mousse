@@ -8,26 +8,37 @@
 
           <SearchFacet
             :checked="degrees"
+            v-if="searchState.facets.degrees"
             :facet="searchState.facets.degrees[0]"
             @change="handleFacetChange($event, 'degrees')"
           />
 
           <SearchFacet
             :checked="cycles"
+            v-if="searchState.facets.cycles"
             :facet="searchState.facets.cycles[0]"
             @change="handleFacetChange($event, 'cycles')"
           />
 
           <SearchFacet
             :checked="types"
+            v-if="searchState.facets.types"
             :facet="searchState.facets.types[0]"
             @change="handleFacetChange($event, 'types')"
           />
 
           <SearchFacet
             :checked="ects"
+            v-if="searchState.facets.ects"
             :facet="searchState.facets.ects[0]"
             @change="handleFacetChange($event, 'ects')"
+          />
+
+          <SearchFacet
+            :checked="departments"
+            v-if="searchState.facets.departments"
+            :facet="searchState.facets.departments[0]"
+            @change="handleFacetChange($event, 'departments')"
           />
         </div>
         <div class="sui-layout-main">
@@ -97,6 +108,7 @@ export default {
       types: [],
       ects: [],
       degrees: [],
+      departments: [],
       resultsPerPage: 20,
       sortBy: "name"
     };
@@ -108,6 +120,7 @@ export default {
   },
   watch: {
     resultsPerPage(newResultsPerPage) {
+      if (newResultsPerPage > 100) newResultsPerPage = 100;
       driver.setResultsPerPage(newResultsPerPage);
     },
     sortBy(newSortBy) {

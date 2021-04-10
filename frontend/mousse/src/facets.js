@@ -11,13 +11,15 @@ export default {
         "terms": {
             "field": "parts.type_str",
             "limit": 200,
+            "mincount": 0,
         }
     },
     "ECTS": {
         "terms": {
-            "field": "ects",
+            "field": "ects_str",
             "limit": 200,
-            // "sort": "index"
+            "mincount": 0,
+            "sort": "index"
 
         }
     },
@@ -27,6 +29,30 @@ export default {
             "mincount": 0,
             "limit": 200,
             "sort": "index",
+        }
+    },
+    "Department": {
+        "terms": {
+            "field": "faculty_str",
+            "mincount": 0,
+            "limit": 200,
+            "sort": "index",
+            "facet": {
+                "Institute": {
+                    "type": "terms",
+                    "field": "institute_str",
+                    "limit": 200,
+                    "sort": "index",
+                    "facet": {
+                        "Group": {
+                            "type": "terms",
+                            "field": "group_str",
+                            "limit": 200,
+                            "sort": "index",
+                        }
+                    }
+                }
+            }
         }
     },
 }
