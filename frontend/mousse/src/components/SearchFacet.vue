@@ -193,6 +193,9 @@ export default {
   text-overflow: ellipsis;
   word-wrap : break-word;
 }
+.sui-multi-checkbox-facet__option-label:hover {
+  background: #eee;
+}
 
 .facets_sticky {
   position: sticky;
@@ -223,5 +226,9 @@ export default {
 
 .sui-multi-checkbox-facet__option-count {
   padding-right: 0.5rem;
+}
+
+.sui-multi-checkbox-facet__input-text {
+  vertical-align: text-bottom;
 }
 </style>

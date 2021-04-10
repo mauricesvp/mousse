@@ -98,6 +98,8 @@ export default {
   justify-content: flex-end;
   padding: 0.25rem 0;
   padding-left: 0.25rem;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .module_part + .module_part {
@@ -153,6 +155,7 @@ p {
 
   .module_part {
     padding: 0.125rem 0;
+    padding-left: 0.25rem;
   }
 
   .fixed_col {
