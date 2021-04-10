@@ -65,7 +65,7 @@ export default {
     var valid = ["Degree", "ECTS"];
     var facets = document.getElementsByClassName("sui-multi-checkbox-facet");
     facets.forEach(facet => {
-      var facetName = facet.firstChild.innerHTML.trim();
+      var facetName = facet.firstChild.firstChild.innerHTML.trim();
       if (facetName === "Exam Type") {
         // This is somewhat hacky tbh
         var facetContainer = facet.getElementsByClassName("non_facets_sticky")[0];
