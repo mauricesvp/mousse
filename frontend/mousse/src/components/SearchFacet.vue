@@ -96,10 +96,16 @@ export default {
       }
     },
     handleSticky(event) {
-      function indexOf(element, list) {
+      function indexOf(element, list, facet) {
         // Returns index of where element should be placed within list (which is sorted)
         var tmp = Array.from(list.getElementsByClassName("sui-multi-checkbox-facet__option-label"));
-        var values = tmp.map(e => (e.children[0].children[0].getAttribute("value")));
+        var values;
+        if (facet === 'Degree') {
+            values = tmp.map(e => (e.children[0].children[0].getAttribute("value")));
+        } else if (facet === 'ECTS') {
+            // Since the ECTS only has Numbers, we don't want to sort alphanumerically
+            values = tmp.map(e => parseInt(e.children[0].children[0].getAttribute("value")));
+        }
         var value = element.children[0].children[0].getAttribute("value");
         var low = 0;
         var high = values.length;
@@ -121,7 +127,7 @@ export default {
         } else {
           otherParent = ourFacet.getElementsByClassName("facets_sticky")[0];
         }
-          var index = indexOf(element, otherParent);
+          var index = indexOf(element, otherParent, this.facet.field);
           // Insert in the right spot
           otherParent.insertBefore(element, otherParent.childNodes[index]);
       }
