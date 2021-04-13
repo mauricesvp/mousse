@@ -102,6 +102,7 @@ def get_degree(id: str, stupo: str) -> None:
         "stupo": stupo,
     }
     modules = []
+    logger.debug(f"Found {len(rows)} modules.")
     for row in rows:
         row_info = get_row_info(row)
         if row_info:
