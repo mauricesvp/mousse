@@ -5,6 +5,10 @@ CREATE TABLE modules (
         version int,
         language char(64),
         ects int,
+        exam_type_str char(64),
+        faculty char(64),
+        institute char(255),
+        group_str char(255),
         PRIMARY KEY (id),
         INDEX (id)
 );
