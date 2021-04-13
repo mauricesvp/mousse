@@ -4,37 +4,29 @@ mousse.xparse
 mauricesvp 2021
 """
 import re
-from multiprocessing import Pool, cpu_count
+from typing import Any
 
-import bs4
 import lxml
-import requests
 from bs4 import BeautifulSoup as BS
 
 from mousse.log import setup_logger
-from mousse.main import degree_url, get_row_info, module_url
-from mousse.utils import html_get, html_post
+from mousse.utils import html_get, html_post, retry
 
 logger = setup_logger("mousse_xparse")
 
 XML_PARSER = lxml.etree.XMLParser(recover=True)
 
 
-def get_module_xml(url: str) -> str:
-    r = None
-    while not r:
+@retry(times=5)
+def get_module_xml(url: str, r: Any = None) -> str:
+    if not r:
         r = html_get(url)
-        if r:
-            break
-    # We need to filter the html before we pass it to bs4
-    # Otherwise we would get max. recursion errors.
-    # This is due to multiprocessing pickling every variable.
     text = re.search("(?<=<form)(.*)(?=form>)", r.text.replace("\n", "").strip())
     if text and hasattr(text, "group") and text.group:
         text = text.group(0)
     else:
         logger.warning("Error parsing XML", url)
-        return ""
+        raise ValueError("Could not get XML", url, str(r))
 
     soup = BS(text, "lxml")
     VIEW_STATE = str(soup.find("input", {"name": "javax.faces.ViewState"})["value"])
@@ -57,7 +49,6 @@ def get_module_xml(url: str) -> str:
     }
     html_post(
         url + f"&jfwid={CLIENT_WINDOW}",
-        timeout=20,
         data=data,
         headers=headers,
         cookies=cookies,
@@ -71,7 +62,6 @@ def get_module_xml(url: str) -> str:
     }
     p2 = html_post(
         url + f"&jfwid={CLIENT_WINDOW}",
-        timeout=20,
         data=data,
         headers=headers,
         cookies=cookies,
@@ -80,24 +70,30 @@ def get_module_xml(url: str) -> str:
     return xml_data
 
 
+@retry(times=5)
 def parse_xml(xml: str) -> dict:
     """Get module information."""
 
     try:
         root = lxml.etree.fromstring(xml, XML_PARSER)
     except Exception as e:
-        print("Error with xml", xml, e)
+        logger.warn("Couldn't parse XML.", e)
         return {}
     # Namespaces
     ns = {"ns2": "http://data.europa.eu/europass/model/credentials#"}
 
     # Fak/Inst/FG
-    fif = [
-        x.text
-        for x in root.findall(
-            ".//ns2:agentReferences/ns2:organization/ns2:prefLabel", ns
-        )
-    ]
+    fif = []
+    try:
+        fif = [
+            x.text
+            for x in root.findall(
+                ".//ns2:agentReferences/ns2:organization/ns2:prefLabel", ns
+            )
+        ]
+    except Exception as e:
+        logger.warn("Couldn't determine departments.", e)
+        raise
     faculty, institute, group = None, None, None
     if len(fif) > 1:
         faculty = fif[1]
@@ -121,8 +117,8 @@ def parse_xml(xml: str) -> dict:
             .split("/")[-1]
         )
     except IndexError:
-        print("Could not get exam type", root)
-        exam_type = ""
+        logger.warn("Could not get exam type.")
+        raise
     if "oral" in exam_type:
         exam_type = "oral"
     elif "written" in exam_type:
@@ -144,57 +140,3 @@ def parse_xml(xml: str) -> dict:
     # Add _str for solr
     information.update({"exam_type_str": exam_type})
     return information
-
-
-def process_row(row: bs4.element.Tag) -> dict:
-    row = BS(row[0], "lxml")
-    row_info = get_row_info(row)
-    if not row_info:
-        return {}
-    number, name, ects, version, language = row_info
-    murl = module_url(number, version)
-    data = get_module_xml(murl)
-    if not data:
-        return {}
-    return {
-        "id": number.replace("#", ""),
-        "version": version.replace("v", ""),
-        **parse_xml(data),
-    }
-
-
-def get_stuff() -> None:
-    semester = "66"
-    url = degree_url(semester=semester, studiengang="", semesterStudiengang="", mkg="")
-    r = requests.get(url)
-    soup = BS(r.text, "lxml")
-    tbody = soup.find_all("tbody")[0]
-    rows = tbody.find_all("tr")
-    rows_str = [[str(x)] for x in rows]
-    res = []
-    n = (cpu_count() * 2) - 1
-    logger.info(f"Getting {len(rows_str)} rows.")
-    with Pool(n) as pool:
-        res = pool.map(process_row, rows_str)
-
-        # Filter modules with multiple versions (only keep newest one)
-        ids = [x["id"] for x in res]
-        duplicates = set(i for i in ids if ids.count(i) > 1)
-        for x in duplicates:
-            max_version = 0
-            tmp = {}
-            # We delete each version, save the currently highest,
-            # and insert that one back in the end
-            for y in [z for z in res if z["id"] == x]:
-                curr_version = int(y["version"].replace("v", ""))
-                if curr_version > max_version:
-                    max_version = curr_version
-                    tmp = y
-                    res.remove(y)
-            res.append(tmp)
-
-        with open("ext_data.json", "w+") as f:
-            f.write(str(res))
-
-
-get_stuff()

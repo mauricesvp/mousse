@@ -6,16 +6,21 @@ mauricesvp 2021
 import os
 
 import mysql.connector
+from mysql.connector.connection_cext import CMySQLConnection
+from mysql.connector.cursor_cext import CMySQLCursor
 
+from mousse.log import setup_logger
 from mousse.utils import retry
 
 PASSWORD = os.environ.get("MYSQL_ROOT_PASSWORD")
 MYSQL_DB = os.environ.get("MYSQL_DATABASE")
 
+logger = setup_logger("mousse_db")
+
 
 class MousseDB:
-    db: mysql.connector.connection_cext.CMySQLConnection = None
-    cursor: mysql.connector.cursor_cext.CMySQLCursor = None
+    db: CMySQLConnection = None
+    cursor: CMySQLCursor = None
 
     def __init__(self) -> None:
         if not self.db:
@@ -44,25 +49,32 @@ class MousseDB:
         self.add_modules([val])
 
     def add_modules(self, val: list) -> None:
+        logger.info(f"Adding {len(val)} modules.")
         # TODO: Verify that values are well-formed?
         self.health_check()
         self.cursor = self.get_cursor()
 
         # Convert list of dicts into list of tuples
         modules = [
-            (int(m["id"]), m["name"], int(m["version"]), m["language"], int(m["ects"]))
+            (
+                int(m["id"]),
+                m["name"],
+                int(m["version"]),
+                m["language"],
+                int(m["ects"]),
+                m["exam_type_str"],
+                m["faculty"],
+                m["institute"],
+                m["group_str"],
+            )
             for m in val
         ]
 
         sql_modules = """
-        INSERT INTO modules (id, name, version, language, ects)
-        VALUES (%s, %s, %s, %s, %s) AS new(m,n,o,p,q)
-        ON DUPLICATE KEY UPDATE
-        id=m, name=n, version=o, language=p, ects=q
-        """
-        sql_modules = """
-        REPLACE INTO modules (id, name, version, language, ects)
-        VALUES (%s, %s, %s, %s, %s)
+        REPLACE INTO modules
+        (id, name, version, language, ects, exam_type_str,
+        faculty, institute, group_str)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         self.cursor.executemany(sql_modules, modules)
         self.db.commit()
@@ -84,6 +96,7 @@ class MousseDB:
         self.cursor.close()
 
     def add_degree(self, val: dict) -> None:
+        logger.info("Adding degree.")
         # TODO: Verify that values are well-formed?
         self.health_check()
         self.cursor = self.get_cursor()
@@ -116,11 +129,14 @@ class MousseDB:
         self.cursor.close()
 
     def get_info(self) -> list:
+        logger.info("Getting info.")
         self.health_check()
         cursor_buffered = self.db.cursor(buffered=True)
         cursor_tmp = self.db.cursor()
 
-        sql_find_modules = """SELECT id, name, version, language, ects FROM modules"""
+        sql_find_modules = """
+            SELECT id, name, version, language, ects, exam_type_str,
+            faculty, institute, group_str FROM modules"""
         cursor_buffered.execute(sql_find_modules)
         module = cursor_buffered.fetchone()
         modules = []
@@ -130,6 +146,10 @@ class MousseDB:
             version = int(module[2])
             language = module[3]
             ects = int(module[4])
+            exam_type_str = module[5]
+            faculty = module[6]
+            institute = module[7]
+            group = module[8]
 
             sql_find_parts = f"""
             SELECT modules.*, module_parts.*
@@ -154,9 +174,9 @@ class MousseDB:
             if len(parts) > 0:
                 parts_ = [
                     {
-                        "name_part": x[6],
-                        "type": x[7],
-                        "cycle": x[8],
+                        "name_part": x[10],
+                        "type": x[11],
+                        "cycle": x[12],
                     }
                     for x in parts
                 ]
@@ -183,8 +203,13 @@ class MousseDB:
                 "ects": str(ects),
                 "parts": parts_,
                 "degrees": degrees_,
+                "exam_type_str": exam_type_str,
+                "faculty": faculty,
+                "institute": institute,
+                "group_str": group,
             }
             modules.append(module_)
 
             module = cursor_buffered.fetchone()
+        logger.info(f"Returning info for {len(modules)} modules.")
         return modules
