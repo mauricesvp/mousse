@@ -10,7 +10,7 @@ python3 -m venv .venv
 . .venv/bin/activate
 ```
 
-To install, run 
+To install, run
 ```bash
 pip install -r requirements.txt
 pip install .

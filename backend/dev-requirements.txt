@@ -3,3 +3,4 @@ isort
 black
 mypy
 flake8
+GitPython
