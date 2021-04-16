@@ -26,3 +26,8 @@ Run formatting and linting before you commit to catch errors early and ensure a 
 ```bash
 make
 ```
+
+## TODOS
+* Add sanity check before exporting data
+* Periodically delete data from database (e.g. TTL)
+* Add tests
