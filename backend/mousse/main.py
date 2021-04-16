@@ -242,11 +242,13 @@ def export_modules() -> None:
     data = moussedb.get_info()
     for x in data:
         # Integer version is needed for sorting
-        x["ects_i"] = int(x["ects"])
         # String version is needed for filtering
+
+        x["ects_i"] = int(x["ects"])
         x["ects_str"] = str(x["ects"])
-        # ('name' will be string too, but multiValued (solr magic))
         x["name_str"] = str(x["name"])
+        x["group"] = str(x["group_str"])
+        x["institute_str"] = str(x["institute"])
     with open("data.json", "w+") as f:
         f.write(str(data))
     # At this point, you can run "./bin/post -c mousse_core /mousse/data.json"
