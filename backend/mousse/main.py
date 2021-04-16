@@ -42,6 +42,7 @@ def get_rows(semester: str) -> list:
     soup = bs(r.text, "lxml")
     tbody = soup.find_all("tbody")[0]
     rows = tbody.find_all("tr")
+    assert isinstance(rows, list)
     return rows
 
 

@@ -5,16 +5,15 @@ mauricesvp 2021
 """
 import functools
 from time import sleep
-from typing import no_type_check
+from typing import Any, Callable
 
 import requests
 
 
-@no_type_check
-def retry(times: int = 3, delay: int = 1):
-    def run(func):
+def retry(times: int = 3, delay: int = 1) -> Callable[..., Any]:
+    def run(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        def f(*args, **kwargs):
+        def f(*args: Any, **kwargs: Any) -> Any:
             attempts = 0
             while attempts < times:
                 try:
@@ -37,9 +36,9 @@ def html_get(url: str, timeout: int = 3) -> requests.Response:
 def html_post(
     url: str,
     timeout: int = 3,
-    data: dict = None,
-    headers: dict = None,
-    cookies: dict = None,
+    data: dict = {},
+    headers: dict = {},
+    cookies: dict = {},
 ) -> requests.Response:
     return requests.post(
         url=url, data=data, headers=headers, cookies=cookies, timeout=timeout

@@ -67,7 +67,7 @@ def get_module_xml(url: str, r: Any = None) -> str:
         cookies=cookies,
     )
     xml_data = p2.content
-    return xml_data
+    return str(xml_data)
 
 
 @retry(times=5)
