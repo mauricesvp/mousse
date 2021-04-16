@@ -34,9 +34,9 @@ export default {
     "Department": {
         "terms": {
             "field": "faculty_str",
-            "mincount": 0,
             "limit": 200,
             "sort": "index",
+            /*
             "facet": {
                 "Institute": {
                     "type": "terms",
@@ -53,6 +53,19 @@ export default {
                     }
                 }
             }
+            */
+        }
+    },
+    "Institute": {
+        "terms": {
+            "field": "institute_str",
+            "limit": 200,
+        }
+    },
+    "Group": {
+        "terms": {
+            "field": "group_str",
+            "limit": 200,
         }
     },
     "Exam Type": {

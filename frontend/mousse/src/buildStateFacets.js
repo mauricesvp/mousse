@@ -68,6 +68,8 @@ export default function buildStateFacets(aggregations) {
   const ects = getValueFacet(aggregations, "ECTS");
   const degrees = getValueFacet(aggregations, "Degree");
   const departments = getValueFacet(aggregations, "Department");
+  const institutes = getValueFacet(aggregations, "Institute");
+  const groups = getValueFacet(aggregations, "Group");
   const examtypes = getValueFacet(aggregations, "Exam Type");
 
   // 'ects' is a string field, which is necessary for solr to accept 'mincount=0'.
@@ -83,6 +85,8 @@ export default function buildStateFacets(aggregations) {
     ...(ects && { ects }),
     ...(degrees && { degrees }),
     ...(departments && { departments }),
+    ...(institutes && { institutes }),
+    ...(groups && { groups }),
     ...(examtypes && { examtypes }),
   };
 

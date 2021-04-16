@@ -15,6 +15,22 @@
           placeholder="Search degree.."
         >
       </div>
+      <div v-if="facet.field === 'Institute'" class="sui-facet-search">
+        <input
+          class="sui-facet-search__text-input"
+          type="search"
+          v-on:keyup="filter"
+          placeholder="Search institute.."
+        >
+      </div>
+      <div v-if="facet.field === 'Group'" class="sui-facet-search">
+        <input
+          class="sui-facet-search__text-input"
+          type="search"
+          v-on:keyup="filter"
+          placeholder="Search group.."
+        >
+      </div>
       <div class="facet-wrapper">
         <div class="sui-multi-checkbox-facet__option-input-wrapper">
           <div class="facets_sticky">
@@ -63,6 +79,7 @@ export default {
   mounted() {
     // Restore pinned labels
     var valid = ["Degree", "ECTS"];
+    var hideByDefault = ["Department", "Institute", "Group"];
     var facets = document.getElementsByClassName("sui-multi-checkbox-facet");
     facets.forEach(facet => {
       var facetName = facet.firstChild.firstChild.innerHTML.trim();
@@ -71,6 +88,10 @@ export default {
         var facetContainer = facet.getElementsByClassName("non_facets_sticky")[0];
         var element = facetContainer.getElementsByTagName("span")[0];
         element.innerHTML = "PORTFOLIO";
+      }
+      if (hideByDefault.includes(facetName)) {
+        var button = facet.getElementsByTagName("button")[0];
+        this.toggleHideInit(button);
       }
       if (!valid.includes(facetName)) return;
       var nonSticky = facet.getElementsByClassName("non_facets_sticky")[0];
@@ -92,10 +113,12 @@ export default {
       return type === "range" ? facetItem.value.name : facetItem.value;
     },
     filter(event) {
-      // Filter degrees with text input
-      // Do not however filter pinned (selected) degrees
+      // Filter facet with text input
+      // Do not however filter pinned (selected) labels
+      var ourFacet = event.currentTarget.parentElement.parentElement;
+
       let filter_val = event.currentTarget.value.toUpperCase();
-      let wrapper = document.getElementsByClassName("non_facets_sticky")[0];
+      let wrapper = ourFacet.getElementsByClassName("non_facets_sticky")[0];
       let elements = wrapper.getElementsByClassName("sui-multi-checkbox-facet__option-label");
       var i;
       for (i = 0; i < elements.length; i++) {
@@ -155,7 +178,13 @@ export default {
       var facetWrapper = facetRoot.getElementsByClassName("facet-hide-wrapper")[0];
       var curr2 = facetWrapper.style.display;
       facetWrapper.style.display = curr2 === "none" ? "block" : "none";
-
+    },
+    toggleHideInit(button) {
+      button.innerHTML = "Show";
+      button.style.fontWeight = 700;
+      var facetRoot = button.parentElement.parentElement;
+      var facetWrapper = facetRoot.getElementsByClassName("facet-hide-wrapper")[0];
+      facetWrapper.style.display = "none";
     }
   }
 };
@@ -208,7 +237,7 @@ export default {
 }
 
 .non_facets_sticky {
-  max-height: 10rem;
+  max-height: 8.75rem;
   overflow-y: auto;
   overflow-x: hidden;
 }

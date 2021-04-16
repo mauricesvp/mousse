@@ -47,6 +47,20 @@
             :facet="searchState.facets.departments[0]"
             @change="handleFacetChange($event, 'departments')"
           />
+
+          <SearchFacet
+            :checked="institutes"
+            v-if="searchState.facets.institutes"
+            :facet="searchState.facets.institutes[0]"
+            @change="handleFacetChange($event, 'institutes')"
+          />
+
+          <SearchFacet
+            :checked="groups"
+            v-if="searchState.facets.groups"
+            :facet="searchState.facets.groups[0]"
+            @change="handleFacetChange($event, 'groups')"
+          />
         </div>
         <div class="sui-layout-main">
           <div class="sui-layout-main-header">
@@ -116,6 +130,8 @@ export default {
       ects: [],
       degrees: [],
       departments: [],
+      institutes: [],
+      groups: [],
       examtypes: [],
       resultsPerPage: 20,
       sortBy: "name"
