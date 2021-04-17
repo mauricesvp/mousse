@@ -4,3 +4,4 @@ black
 mypy
 flake8
 GitPython
+flake8-docstrings

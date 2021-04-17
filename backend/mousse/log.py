@@ -1,5 +1,5 @@
 """
-mousse.log
+Mousse logging.
 
 mauricesvp 2021
 """
@@ -7,6 +7,7 @@ import logging
 
 
 def setup_logger(name: str) -> logging.Logger:
+    """Set the logger up."""
     formatter = logging.Formatter(
         "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
     )

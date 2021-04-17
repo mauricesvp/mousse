@@ -1,5 +1,5 @@
 """
-mousse.mkg - Iterate degrees, save latest stupo and module list
+Latest stupo and module lists.
 
 mauricesvp 2021
 """
@@ -15,6 +15,8 @@ logger = setup_logger("geez_mkg")
 
 def calc_sem(inp: str) -> str:
     """
+    Convert semester.
+
     ss21 -> 66
     ws20 -> 65
     ..
@@ -33,6 +35,7 @@ def calc_sem(inp: str) -> str:
 
 
 def gen_degrees() -> Tuple[dict, dict]:
+    """Return newest stupo and module list for each degree."""
     stupos = {}
     mls = {}
     for i in range(29, 400):

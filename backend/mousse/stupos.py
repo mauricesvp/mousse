@@ -1,3 +1,9 @@
+"""
+Latest degree to stupo mappings.
+
+mauricesvp 2021
+"""
+
 DEPRECATED = {
     29: 24215,  # Economics B.Sc.
     101: 0,  # Computational Neuroscience

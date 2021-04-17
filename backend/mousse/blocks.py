@@ -1,5 +1,6 @@
 """
-mousse.blocks
+Block course search.
+
 ----
 Consider this beta-ish
 

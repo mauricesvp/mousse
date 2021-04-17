@@ -1,5 +1,5 @@
 """
-mousse.main
+Main script for mousse.
 
 mauricesvp 2021
 """
@@ -37,6 +37,7 @@ DELAY = 3600 * 6
 
 @retry(times=5)
 def get_rows(semester: str) -> list:
+    """Return all rows from MTS search result."""
     url = degree_url(semester=semester, studiengang="", semesterStudiengang="", mkg="")
     r = html_get(url)
     soup = bs(r.text, "lxml")
@@ -60,7 +61,7 @@ def pre_process_rows(rows: list) -> list:
 
 
 def get_modules(semester: str) -> None:
-    # Get all modules
+    """Get and update all modules."""
     rows = get_rows(semester)
     logger.info(f"Found {len(rows)} rows.")
     # Filter old module versions
@@ -82,6 +83,7 @@ def get_modules(semester: str) -> None:
 
 @retry(times=5, delay=2)
 def get_degree(id: str, stupo: str) -> None:
+    """Get and update degree."""
     semester = SEMESTER
     studiengang = id
     semesterStudiengang = semester
@@ -115,6 +117,7 @@ def get_degree(id: str, stupo: str) -> None:
 
 
 def get_row_info(row: bs4.element.Tag) -> tuple:
+    """Get info from module row."""
     try:
         tds = row.find_all("td")
         name = tds[3].contents[0].strip()
@@ -132,6 +135,7 @@ def get_row_info(row: bs4.element.Tag) -> tuple:
 
 
 def process_row(row_info: list) -> dict:
+    """Scrape module from row info."""
     row_info = row_info[0]
     try:
         number, name, ects, version, language = row_info
@@ -216,6 +220,7 @@ def get_module(url: str) -> Tuple[Any, list]:
 def degree_url(
     semester: str, studiengang: str, mkg: str, semesterStudiengang: str
 ) -> str:
+    """Construct MTS degree url."""
     return (
         f"https://moseskonto.tu-berlin.de/moses/modultransfersystem/bolognamodule/"
         f"suchen.html?semester={semester}&studiengang={studiengang}&mkg={mkg}"
@@ -224,6 +229,7 @@ def degree_url(
 
 
 def module_url(number: str, version: str) -> str:
+    """Construct MTS module url."""
     number = number.replace("#", "")
     version = version.replace("v", "")
     return (
@@ -234,9 +240,11 @@ def module_url(number: str, version: str) -> str:
 
 def export_modules() -> None:
     """
-    1. Connect to mysql and get data (esp. JOINs)
-    2. Build modules (This now happens in mousse.db.get_info)
-    3. Post to solr (This also happens somewhere else now)
+    Get data from db and export as json.
+
+    1. Connect to mysql and get data (esp. JOINs).
+    2. Build modules (This now happens in mousse.db.get_info).
+    3. Post to solr (This also happens somewhere else now).
     """
     logger.info("Exporting data.")
     global moussedb
@@ -258,6 +266,7 @@ def export_modules() -> None:
 
 @retry(5)
 def init_db() -> None:
+    """Init (python) db instance (actual db is init. already)."""
     global moussedb
     moussedb = db.MousseDB()
     while not moussedb:
@@ -265,6 +274,7 @@ def init_db() -> None:
 
 
 def main() -> None:
+    """Init and run."""
     logger.info("Starting mousse main.")
     init_db()
     while True:

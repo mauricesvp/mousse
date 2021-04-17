@@ -1,5 +1,5 @@
 """
-mousse.db
+Mousse database (wrapper).
 
 mauricesvp 2021
 """
@@ -19,36 +19,48 @@ logger = setup_logger("mousse_db")
 
 
 class MousseDB:
+    """
+    Mousse database.
+
+    Wraps mysql and adds data export.
+    """
+
     db: CMySQLConnection = None
     cursor: CMySQLCursor = None
 
     def __init__(self) -> None:
+        """Init instance."""
         if not self.db:
             self.db = self.get_db()
         self.cursor = self.db.cursor()
 
     @retry(5)
     def get_db(self) -> mysql.connector.connection_cext.CMySQLConnection:
+        """Return mysql connection."""
         return mysql.connector.connect(
             host="mysql", password=PASSWORD, database=MYSQL_DB
         )
 
     def get_cursor(self) -> mysql.connector.cursor_cext.CMySQLCursor:
+        """Return connection cursor."""
         if not self.db:
             return self.get_db().cursor()
         return self.db.cursor()
 
     @retry(5)
     def health_check(self) -> None:
+        """Reconnect if necessary."""
         if not self.db:
             self.db = self.get_db()
         if not self.cursor:
             self.cursor = self.get_cursor()
 
     def add_module(self, val: dict) -> None:
+        """Add single module."""
         self.add_modules([val])
 
     def add_modules(self, val: list) -> None:
+        """Add multiple modules."""
         logger.info(f"Adding {len(val)} modules.")
         # TODO: Verify that values are well-formed?
         self.health_check()
@@ -96,6 +108,7 @@ class MousseDB:
         self.cursor.close()
 
     def add_degree(self, val: dict) -> None:
+        """Add single degree."""
         logger.info("Adding degree.")
         # TODO: Verify that values are well-formed?
         self.health_check()
@@ -129,6 +142,7 @@ class MousseDB:
         self.cursor.close()
 
     def get_info(self) -> list:
+        """Return data as list of modules."""
         logger.info("Getting info.")
         self.health_check()
         cursor_buffered = self.db.cursor(buffered=True)

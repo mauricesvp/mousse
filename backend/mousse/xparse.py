@@ -1,5 +1,5 @@
 """
-mousse.xparse
+XML parsing.
 
 mauricesvp 2021
 """
@@ -19,6 +19,7 @@ XML_PARSER = lxml.etree.XMLParser(recover=True)
 
 @retry(times=5)
 def get_module_xml(url: str, r: Any = None) -> str:
+    """Return XML version of module as string."""
     if not r:
         r = html_get(url)
     text = re.search("(?<=<form)(.*)(?=form>)", r.text.replace("\n", "").strip())
@@ -73,7 +74,6 @@ def get_module_xml(url: str, r: Any = None) -> str:
 @retry(times=5)
 def parse_xml(xml: str) -> dict:
     """Get module information."""
-
     try:
         root = lxml.etree.fromstring(xml, XML_PARSER)
     except Exception as e:
