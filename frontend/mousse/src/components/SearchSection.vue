@@ -181,7 +181,7 @@ export default {
   },
   methods: {
     handleFormSubmit() {
-      driver.getActions().setSearchTerm(this.searchInputValue);
+      driver.getActions().setSearchTerm(this.searchInputValue, { shouldClearFilters: false });
     },
     handleFacetChange(event, facet) {
 
