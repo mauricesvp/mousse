@@ -18,7 +18,7 @@ XML_PARSER = lxml.etree.XMLParser(recover=True)
 
 
 @retry(times=5)
-def get_module_xml(url: str, r: Any = None) -> str:
+def get_module_xml(url: str, r: Any = None) -> Any:
     """Return XML version of module as string."""
     if not r:
         r = html_get(url)
@@ -68,7 +68,7 @@ def get_module_xml(url: str, r: Any = None) -> str:
         cookies=cookies,
     )
     xml_data = p2.content
-    return str(xml_data)
+    return xml_data
 
 
 @retry(times=5)
