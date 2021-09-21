@@ -44,24 +44,30 @@ def gen_degrees() -> Tuple[dict, dict]:
             f"https://moseskonto.tu-berlin.de/moses/modultransfersystem/studiengaenge/"
             f"anzeigen.html?studiengang={i}"
         )
-        r = html_get(url, timeout=1)
-        if r and "error" not in r.url:
-            soup = bs(r.text, "lxml")
-            select_stupo = soup.find(id="j_idt103:j_idt160")
-            options_stupo = select_stupo.parent.find_all("option")
-            newest_stupo = options_stupo[-1]["value"]
-            stupos.update({i: newest_stupo})
-            # module list (e.g. SS2021)
-            select_ml = soup.find(id="j_idt103:j_idt166")
-            if not select_ml:
-                select_ml = soup.find(id="j_idt103:j_idt172")
-            options_ml = select_ml.parent.find_all("option")
-            newest_ml = None
-            nml = None
-            if len(options_ml) > 1:
-                newest_ml = options_ml[1].text
-                nml = calc_sem(newest_ml)
-                mls.update({i: nml})
+        r = html_get(url, timeout=2)
+        if not r or "error" in r.url or "shibboleth" in r.url:
+            continue
 
-            logger.debug(f"Found newest stupo {newest_stupo} and module list {nml}.")
+        soup = bs(r.text, "lxml")
+        # select_stupo = soup.find(id="j_idt103:j_idt160")
+        select_stupo = soup.find(id="j_idt102:j_idt159")
+        options_stupo = select_stupo.parent.find_all("option")
+        if len(options_stupo) < 1:
+            continue
+        newest_stupo = options_stupo[-1]["value"]
+        stupos.update({i: newest_stupo})
+        # module list (e.g. SS2021)
+        # select_ml = soup.find(id="j_idt103:j_idt166")
+        select_ml = soup.find(id="j_idt102:j_idt165")
+        if not select_ml:
+            select_ml = soup.find(id="j_idt102:j_idt171")
+        options_ml = select_ml.parent.find_all("option")
+        newest_ml = None
+        nml = None
+        if len(options_ml) > 1:
+            newest_ml = options_ml[1].text
+            nml = calc_sem(newest_ml)
+            mls.update({i: nml})
+
+        logger.debug(f"Found newest stupo {newest_stupo} and module list {nml}.")
     return stupos, mls

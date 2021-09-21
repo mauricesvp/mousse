@@ -13,7 +13,9 @@ from bs4 import BeautifulSoup as bs
 
 import mousse.db as db
 from mousse.log import setup_logger
-from mousse.stupos import STUPOS
+
+# from mousse.stupos import STUPOS
+from mousse.stupos_ws21 import STUPOS
 from mousse.utils import array_split, html_get, retry
 from mousse.xparse import get_module_xml, parse_xml
 
@@ -22,7 +24,8 @@ logger = setup_logger("mousse_main")
 
 moussedb: db.MousseDB
 
-SEMESTER = "66"  # SOSE2021
+SEMESTER = "67"  # WISE2021
+# SEMESTER = "66"  # SOSE2021
 SEMESTER_MAPPING = {
     "66": "SS2021",
     "67": "WS2021",
@@ -74,9 +77,11 @@ def get_modules(semester: str) -> None:
         logger.info(f"Processing batch {i+1}/{len(chunks)} ({len(chunk)} rows).")
         res = []
         rows_str = [[x] for x in list(chunk)]
+
         with Pool(n) as pool:
             res = pool.map(process_row, rows_str)
 
+        res = [x for x in res if x]
         global moussedb
         moussedb.add_modules(res)
 
@@ -95,7 +100,8 @@ def get_degree(id: str, stupo: str) -> None:
     soup = bs(r.text, "lxml")
     tbody = soup.find_all("tbody")[0]
     rows = tbody.find_all("tr")
-    name = soup.find(id="j_idt114:j_idt169_input")["value"]
+    # name = soup.find(id="j_idt114:j_idt169_input")["value"]
+    name = soup.find(id="j_idt113:j_idt168_input")["value"]
     ba_or_ma = name.split("(")[-1][0]
     degree = {
         "name": name,
@@ -160,14 +166,16 @@ def process_row(row_info: list) -> dict:
             # Try again
             data = get_module_xml(murl)
             xinfo = parse_xml(data)
-            assert xinfo is not None and "exam_type_str" in xinfo
+
+        if xinfo is None:
+            xinfo = {}
 
         exam_type_str = xinfo.get("exam_type_str", "")
         faculty = xinfo.get("faculty", "")
         institute = xinfo.get("institute", "")
         group_str = xinfo.get("group", "")
     if exam_type_str == "unknown":
-        logger.error(number)
+        logger.error(f"unknown exam type {number}")
     return {
         "id": number,
         "name": name,

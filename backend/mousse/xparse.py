@@ -39,12 +39,17 @@ def get_module_xml(url: str, r: Any = None) -> Any:
     headers = {"Content-type": "application/x-www-form-urlencoded"}
     data = {
         "javax.faces.partial.ajax": "true",
-        "javax.faces.source": "j_idt106:j_idt117",
+        # "javax.faces.source": "j_idt106:j_idt117",
+        "javax.faces.source": "j_idt105:j_idt116",
         "javax.faces.partial.execute": "@all",
-        "javax.faces.partial.render": "j_idt106",
-        "j_idt106:j_idt117": "j_idt106:j_idt117",
-        "j_idt106": "j_idt106",
-        "j_idt106:j_idt122": "1",
+        # "javax.faces.partial.render": "j_idt106",
+        "javax.faces.partial.render": "j_idt105",
+        # "j_idt106:j_idt117": "j_idt106:j_idt117",
+        "j_idt105:j_idt116": "j_idt105:j_idt116",
+        # "j_idt106": "j_idt106",
+        "j_idt105": "j_idt105",
+        # "j_idt106:j_idt122": "1",
+        "j_idt105:j_idt121": "1",
         "javax.faces.ViewState": VIEW_STATE,
         "javax.faces.ClientWindow": CLIENT_WINDOW,
     }
@@ -55,11 +60,14 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         cookies=cookies,
     )
     data = {
-        "j_idt106": "j_idt106",
-        "j_idt106:j_idt122": "1",
+        # "j_idt106": "j_idt106",
+        "j_idt105": "j_idt105",
+        # "j_idt106:j_idt122": "1",
+        "j_idt105:j_idt121": "1",
         "javax.faces.ViewState": VIEW_STATE,
         "javax.faces.ClientWindow": CLIENT_WINDOW,
-        "j_idt106:j_idt119": "j_idt106:j_idt119",
+        # "j_idt106:j_idt119": "j_idt106:j_idt119",
+        "j_idt105:j_idt118": "j_idt105:j_idt118",
     }
     p2 = html_post(
         url + f"&jfwid={CLIENT_WINDOW}",
@@ -80,7 +88,8 @@ def parse_xml(xml: str) -> dict:
         logger.warn("Couldn't parse XML.", e)
         return {}
     # Namespaces
-    ns = {"ns2": "http://data.europa.eu/europass/model/credentials#"}
+    # ns = {"ns2": "http://data.europa.eu/europass/model/credentials#"}
+    ns = {"ns5": "http://data.europa.eu/snb"}
 
     # Fak/Inst/FG
     fif = []
@@ -88,7 +97,9 @@ def parse_xml(xml: str) -> dict:
         fif = [
             x.text
             for x in root.findall(
-                ".//ns2:agentReferences/ns2:organization/ns2:prefLabel", ns
+                # ".//ns2:agentReferences/ns2:organization/ns2:prefLabel", ns
+                ".//ns5:agentReferences/ns5:organization/ns5:prefLabel/ns5:text",
+                ns,
             )
         ]
     except Exception as e:
@@ -109,26 +120,33 @@ def parse_xml(xml: str) -> dict:
     try:
         exam_type = (
             root.findall(
-                ".//ns2:assessmentSpecificationReferences"
-                "/ns2:assessmentSpecification/ns2:type",
+                # ".//ns2:assessmentSpecificationReferences"
+                ".//ns5:assessmentSpecificationReferences"
+                # "/ns2:assessmentSpecification/ns2:type",
+                "/ns5:assessmentSpecification/ns5:type",
                 ns,
             )[0]
             .get("uri")
             .split("/")[-1]
         )
     except IndexError:
-        logger.warn("Could not get exam type.")
+        # logger.warn("Could not get exam type.")
         raise
-    if "oral" in exam_type:
+    # if "oral" in exam_type:
+    if "d30284d7df" in exam_type:
         exam_type = "oral"
-    elif "written" in exam_type:
+    # elif "written" in exam_type:
+    elif "6e6cb2cc78" in exam_type:
         exam_type = "written"
-    elif "continuous" in exam_type:
+    # elif "continuous" in exam_type:
+    elif "4f03b91c0e" in exam_type:
         exam_type = "continuous"
-    elif "marked" in exam_type:
+    # elif "marked" in exam_type:
+    elif "7331eb4762" in exam_type:
         exam_type = "none"
     else:
         exam_type = "unknown"
+    # TODO: Add Hausarbeit etc.
 
     information = dict()
     if faculty:
