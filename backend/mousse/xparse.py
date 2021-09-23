@@ -26,7 +26,8 @@ def get_module_xml(url: str, r: Any = None) -> Any:
     if text and hasattr(text, "group") and text.group:
         text = text.group(0)
     else:
-        logger.warning("Error parsing XML", url)
+        logger.warning("Error parsing XML")
+        logger.warning(url)
         raise ValueError("Could not get XML", url, str(r))
 
     soup = BS(text, "lxml")
