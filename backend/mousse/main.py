@@ -13,11 +13,14 @@ from bs4 import BeautifulSoup as bs
 
 import mousse.db as db
 from mousse.log import setup_logger
-
-# from mousse.stupos import STUPOS
 from mousse.stupos_ws21 import STUPOS
 from mousse.utils import array_split, html_get, retry
 from mousse.xparse import get_module_xml, parse_xml
+
+# Old
+# from mousse.stupos import STUPOS
+# Debugging
+# from IPython import embed
 
 sys.setrecursionlimit(20000)
 logger = setup_logger("mousse_main")
@@ -78,6 +81,11 @@ def get_modules(semester: str) -> None:
         res = []
         rows_str = [[x] for x in list(chunk)]
 
+        # Debugging
+        # test = process_row(rows_str[0])
+        # embed()
+        # exit()
+
         with Pool(n) as pool:
             res = pool.map(process_row, rows_str)
 
@@ -86,7 +94,7 @@ def get_modules(semester: str) -> None:
         moussedb.add_modules(res)
 
 
-@retry(times=5, delay=2)
+@retry(times=5, delay=2, debug=True)
 def get_degree(id: str, stupo: str) -> None:
     """Get and update degree."""
     semester = SEMESTER
@@ -96,21 +104,25 @@ def get_degree(id: str, stupo: str) -> None:
     url = degree_url(semester, studiengang, stupo, semesterStudiengang)
     logger.info(f"Getting degree {id}. URL: {url}")
 
-    r = html_get(url=url)
-    soup = bs(r.text, "lxml")
-    tbody = soup.find_all("tbody")[0]
-    rows = tbody.find_all("tr")
-    # name = soup.find(id="j_idt114:j_idt169_input")["value"]
-    name = soup.find(id="j_idt113:j_idt168_input")["value"]
-    ba_or_ma = name.split("(")[-1][0]
-    degree = {
-        "name": name,
-        "id": int(id),
-        "semester": SEMESTER_MAPPING[semester],
-        "ba_or_ma": ba_or_ma,
-        "stupo": stupo,
-    }
-    modules = []
+    try:
+        r = html_get(url=url)
+        soup = bs(r.text, "lxml")
+        tbody = soup.find_all("tbody")[0]
+        rows = tbody.find_all("tr")
+        name = soup.find(id="j_idt114:j_idt169_input")["value"]
+        # name = soup.find(id="j_idt113:j_idt168_input")["value"]
+        ba_or_ma = name.split("(")[-1][0]
+        degree = {
+            "name": name,
+            "id": int(id),
+            "semester": SEMESTER_MAPPING[semester],
+            "ba_or_ma": ba_or_ma,
+            "stupo": stupo,
+        }
+        modules = []
+    except Exception as e:
+        logger.debug(e)
+        raise
     logger.debug(f"Found {len(rows)} modules.")
     for row in rows:
         row_info = get_row_info(row)
@@ -153,7 +165,7 @@ def process_row(row_info: list) -> dict:
     faculty = ""
     institute = ""
     group_str = ""
-    if "Masterarbeit" not in name or "Bachelorarbeit" not in name:
+    if "Masterarbeit" not in name and "Bachelorarbeit" not in name:
         murl = module_url(number, version)
         r, parts = get_module(murl)
 
@@ -168,6 +180,7 @@ def process_row(row_info: list) -> dict:
             xinfo = parse_xml(data)
 
         if xinfo is None:
+            logger.debug(f"No exam/chair info ({number})")
             xinfo = {}
 
         exam_type_str = xinfo.get("exam_type_str", "")
@@ -295,7 +308,7 @@ def main() -> None:
         5. Sleep and Repeat
         """
         get_modules(semester=SEMESTER)
-        for s in STUPOS:
+        for s in STUPOS:  # TODO: Multithreaded
             get_degree(id=str(s), stupo=STUPOS[s])
         export_modules()
         logger.info(f"Going to sleep .. ({DELAY} seconds)")

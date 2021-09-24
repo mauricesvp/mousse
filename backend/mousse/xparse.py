@@ -17,7 +17,7 @@ logger = setup_logger("mousse_xparse")
 XML_PARSER = lxml.etree.XMLParser(recover=True)
 
 
-@retry(times=5)
+@retry(times=5, debug=True)
 def get_module_xml(url: str, r: Any = None) -> Any:
     """Return XML version of module as string."""
     if not r:
@@ -40,17 +40,17 @@ def get_module_xml(url: str, r: Any = None) -> Any:
     headers = {"Content-type": "application/x-www-form-urlencoded"}
     data = {
         "javax.faces.partial.ajax": "true",
-        # "javax.faces.source": "j_idt106:j_idt117",
-        "javax.faces.source": "j_idt105:j_idt116",
+        "javax.faces.source": "j_idt106:j_idt117",
+        # "javax.faces.source": "j_idt105:j_idt116",
         "javax.faces.partial.execute": "@all",
-        # "javax.faces.partial.render": "j_idt106",
-        "javax.faces.partial.render": "j_idt105",
-        # "j_idt106:j_idt117": "j_idt106:j_idt117",
-        "j_idt105:j_idt116": "j_idt105:j_idt116",
-        # "j_idt106": "j_idt106",
-        "j_idt105": "j_idt105",
-        # "j_idt106:j_idt122": "1",
-        "j_idt105:j_idt121": "1",
+        "javax.faces.partial.render": "j_idt106",
+        # "javax.faces.partial.render": "j_idt105",
+        "j_idt106:j_idt117": "j_idt106:j_idt117",
+        # "j_idt105:j_idt116": "j_idt105:j_idt116",
+        "j_idt106": "j_idt106",
+        # "j_idt105": "j_idt105",
+        "j_idt106:j_idt122": "1",
+        # "j_idt105:j_idt121": "1",
         "javax.faces.ViewState": VIEW_STATE,
         "javax.faces.ClientWindow": CLIENT_WINDOW,
     }
@@ -61,14 +61,14 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         cookies=cookies,
     )
     data = {
-        # "j_idt106": "j_idt106",
-        "j_idt105": "j_idt105",
-        # "j_idt106:j_idt122": "1",
-        "j_idt105:j_idt121": "1",
+        "j_idt106": "j_idt106",
+        # "j_idt105": "j_idt105",
+        "j_idt106:j_idt122": "1",
+        # "j_idt105:j_idt121": "1",
         "javax.faces.ViewState": VIEW_STATE,
         "javax.faces.ClientWindow": CLIENT_WINDOW,
-        # "j_idt106:j_idt119": "j_idt106:j_idt119",
-        "j_idt105:j_idt118": "j_idt105:j_idt118",
+        "j_idt106:j_idt119": "j_idt106:j_idt119",
+        # "j_idt105:j_idt118": "j_idt105:j_idt118",
     }
     p2 = html_post(
         url + f"&jfwid={CLIENT_WINDOW}",

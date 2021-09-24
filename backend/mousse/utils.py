@@ -10,7 +10,7 @@ from typing import Any, Callable
 import requests
 
 
-def retry(times: int = 3, delay: int = 1) -> Callable[..., Any]:
+def retry(times: int = 3, delay: int = 1, debug: bool = False) -> Callable[..., Any]:
     """Retry wrapper."""
 
     def run(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -20,7 +20,9 @@ def retry(times: int = 3, delay: int = 1) -> Callable[..., Any]:
             while attempts < times:
                 try:
                     return func(*args, **kwargs)
-                except:  # noqa: E722
+                except Exception as e:  # noqa: E722
+                    if debug:
+                        print(e)
                     attempts += 1
                     sleep(delay)
 
@@ -29,7 +31,7 @@ def retry(times: int = 3, delay: int = 1) -> Callable[..., Any]:
     return run
 
 
-@retry(5)
+@retry(5, debug=True)
 def html_get(url: str, timeout: int = 3) -> requests.Response:
     """Return requests.get result."""
     return requests.get(url=url, timeout=timeout)
