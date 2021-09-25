@@ -12,6 +12,8 @@ from bs4 import BeautifulSoup as BS
 from mousse.log import setup_logger
 from mousse.utils import html_get, html_post, retry
 
+# from IPython import embed
+
 logger = setup_logger("mousse_xparse")
 
 XML_PARSER = lxml.etree.XMLParser(recover=True)
@@ -31,25 +33,40 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         raise ValueError("Could not get XML", url, str(r))
 
     soup = BS(text, "lxml")
+
+    # j_idtxxx:j_idtxxx
+    faces_source = soup.find(text=re.compile("Generate XML")).parent["id"]
+    faces_prefix = faces_source.split(":")[0]
+    faces_suffix_lang = int(faces_prefix[-3:]) + 16
+    faces_suffix_data = int(faces_prefix[-3:]) + 13
+
     VIEW_STATE = str(soup.find("input", {"name": "javax.faces.ViewState"})["value"])
     CLIENT_WINDOW = str(
         soup.find("input", {"name": "javax.faces.ClientWindow"})["value"]
     )
+
     del soup
+
     cookies = r.cookies
     headers = {"Content-type": "application/x-www-form-urlencoded"}
+
     data = {
         "javax.faces.partial.ajax": "true",
-        "javax.faces.source": "j_idt106:j_idt117",
+        "javax.faces.source": f"{faces_source}",
+        # "javax.faces.source": "j_idt106:j_idt117",
         # "javax.faces.source": "j_idt105:j_idt116",
         "javax.faces.partial.execute": "@all",
-        "javax.faces.partial.render": "j_idt106",
+        "javax.faces.partial.render": f"{faces_prefix}",
+        # "javax.faces.partial.render": "j_idt106",
         # "javax.faces.partial.render": "j_idt105",
-        "j_idt106:j_idt117": "j_idt106:j_idt117",
+        f"{faces_source}": f"{faces_source}",
+        # "j_idt106:j_idt117": "j_idt106:j_idt117",
         # "j_idt105:j_idt116": "j_idt105:j_idt116",
-        "j_idt106": "j_idt106",
+        f"{faces_prefix}": f"{faces_prefix}",
+        # "j_idt106": "j_idt106",
         # "j_idt105": "j_idt105",
-        "j_idt106:j_idt122": "1",
+        f"{faces_prefix}:j_idt{faces_suffix_lang}": "1",
+        # "j_idt106:j_idt122": "1",  # 1: Deutsch, 2: English
         # "j_idt105:j_idt121": "1",
         "javax.faces.ViewState": VIEW_STATE,
         "javax.faces.ClientWindow": CLIENT_WINDOW,
@@ -60,14 +77,18 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         headers=headers,
         cookies=cookies,
     )
+    tmp = f"{faces_prefix}:j_idt{faces_suffix_data}"
     data = {
-        "j_idt106": "j_idt106",
+        f"{faces_prefix}": f"{faces_prefix}",
+        # "j_idt106": "j_idt106",
         # "j_idt105": "j_idt105",
-        "j_idt106:j_idt122": "1",
+        f"{faces_prefix}:j_idt{faces_suffix_lang}": "1",
+        # "j_idt106:j_idt122": "1",
         # "j_idt105:j_idt121": "1",
         "javax.faces.ViewState": VIEW_STATE,
         "javax.faces.ClientWindow": CLIENT_WINDOW,
-        "j_idt106:j_idt119": "j_idt106:j_idt119",
+        tmp: tmp,
+        # "j_idt106:j_idt119": "j_idt106:j_idt119",
         # "j_idt105:j_idt118": "j_idt105:j_idt118",
     }
     p2 = html_post(
@@ -86,7 +107,8 @@ def parse_xml(xml: str) -> dict:
     try:
         root = lxml.etree.fromstring(xml, XML_PARSER)
     except Exception as e:
-        logger.warn("Couldn't parse XML.", e)
+        logger.warn("Couldn't parse XML.")
+        logger.warn(e)
         return {}
     # Namespaces
     # ns = {"ns2": "http://data.europa.eu/europass/model/credentials#"}
