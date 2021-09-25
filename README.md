@@ -1,4 +1,4 @@
-# [mousse](https://tu.eno.pw) - Module Search Super Easy&trade;
+# [mousse](https://tu.eno.pw) - Module Search Super Easy
 ![Website](https://img.shields.io/website?down_color=red&down_message=offline&up_color=blue&up_message=online&url=https%3A%2F%2Ftu.eno.pw)
 ![Security Headers](https://img.shields.io/security-headers?url=https%3A%2F%2Ftu.eno.pw)
 ![Lines of code](https://tokei.rs/b1/github/mauricesvp/mousse)
