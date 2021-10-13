@@ -51,7 +51,7 @@ function buildFilterQuery(filters) {
                     field = "ects";
                     break;
                 case "degrees":
-                    field = "degrees.name_degree";
+                    field = "degrees.name_degree_str";
                     break;
                 case "departments":
                     field = "faculty";
@@ -70,7 +70,7 @@ function buildFilterQuery(filters) {
                 // For some fields we want to match the full string,
                 // hence why we need to add quotes around the search value (i.e. make solr happy)
                 if (field === "exam_type_str") value = value.toLowerCase();
-                if (field === "degrees.name_degree" || field === "faculty" || field === "institute" || field === "group") {
+                if (field === "degrees.name_degree_str" || field === "faculty" || field === "institute" || field === "group") {
                     value = "\"" + value + "\"";
                 }
                 fq += "+" + field + ":" + value;

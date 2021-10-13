@@ -14,7 +14,7 @@ function getValueFacet(aggregations, fieldName) {
         field: fieldName,
         type: "value",
         data: aggregations[fieldName].buckets.map(bucket => ({
-          value: bucket.val.toString().toUpperCase(),
+            value: fieldName == "Degree" ? bucket.val.toString() : bucket.val.toString().toUpperCase(),
           count: bucket.count
         }))
       }
