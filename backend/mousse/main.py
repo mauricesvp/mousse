@@ -5,6 +5,7 @@ mauricesvp 2021
 """
 import sys
 import time
+import traceback
 from multiprocessing import Pool, cpu_count
 from typing import Any, Tuple
 
@@ -109,8 +110,12 @@ def get_degree(id: str, stupo: str) -> None:
         soup = bs(r.text, "lxml")
         tbody = soup.find_all("tbody")[0]
         rows = tbody.find_all("tr")
-        name = soup.find(id="j_idt114:j_idt169_input")["value"]
+        # The j_idt changes all the time
+        # name = soup.find(id="j_idt114:j_idt169_input")["value"]
         # name = soup.find(id="j_idt113:j_idt168_input")["value"]
+        # Big brain
+        name = soup.find(placeholder="Studiengang auswählen...")["value"]
+
         ba_or_ma = name.split("(")[-1][0]
         degree = {
             "name": name,
@@ -121,7 +126,8 @@ def get_degree(id: str, stupo: str) -> None:
         }
         modules = []
     except Exception as e:
-        logger.debug(e)
+        logger.debug(traceback.format_exc())
+        # logger.debug(e)
         raise
     logger.debug(f"Found {len(rows)} modules.")
     for row in rows:
