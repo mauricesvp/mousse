@@ -129,6 +129,12 @@ class MousseDB:
         self.cursor.execute(sql_degree, degree)
         self.db.commit()
 
+        sql_delete_degree_modules = """
+        DELETE FROM degree_modules WHERE degree_id = %s
+        """
+        self.cursor.execute(sql_delete_degree_modules, (degree[0],))
+        self.db.commit()
+
         degree_modules = [
             (int(val["id"]), int(x[0].replace("#", ""))) for x in val["modules"]
         ]

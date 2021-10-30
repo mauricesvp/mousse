@@ -27,6 +27,16 @@ Run formatting and linting before you commit to catch errors early and ensure a 
 make
 ```
 
+## MySQL CLI
+Do you want to inspect the database manually? Do this:
+
+0. Make sure the mysql service is running.
+1. `$ sudo docker exec -it mousse_mysql_1 /bin/bash`
+2. (Inside docker:) mysql --password moussedb
+3. Enter `root`
+4. (Inside MySQL monitor:) `use moussedb;`
+5. You are good to go! Try `select count(*) from modules;`
+
 ## TODOS
 * Add sanity check before exporting data
 * Periodically delete data from database (e.g. TTL)
