@@ -1,3 +1,7 @@
+# :warning: DEPRECATION WARNING - The list of modules no longer gets updated, use the [official module search](https://moseskonto.tu-berlin.de/moses/modultransfersystem/index.html) instead
+
+### As the latest update to MTS (the official module search of TU Berlin) added many filter options, this project will no longer get maintained.
+
 # [mousse](https://tu.eno.pw) - Module Search Super Easy
 ![Website](https://img.shields.io/website?down_color=red&down_message=offline&up_color=blue&up_message=online&url=https%3A%2F%2Ftu.eno.pw)
 ![Security Headers](https://img.shields.io/security-headers?url=https%3A%2F%2Ftu.eno.pw)
