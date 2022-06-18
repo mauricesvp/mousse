@@ -41,6 +41,7 @@ services:
     - ./data/certbot/conf:/etc/letsencrypt:rw
     - ./data/certbot/www:/var/www/certbot:rw
   solr:
+    restart: unless-stopped
     command:
     - solr-precreate
     - mousse_core
@@ -51,7 +52,7 @@ services:
     volumes:
     - data_solr:/opt/solr/server/solr/mousse_core
     - ./backend/data.json:/data.json
-    command: /bin/sh -c 'while :; do sleep 6h & wait $${!}; /opt/solr-8.8.1/bin/post -c mousse_core /data.json; done'
+      # command: /bin/sh -c 'while :; do sleep 6h & wait $${!}; /opt/solr-8.8.1/bin/post -c mousse_core /data.json; done'
   web:
     build: ./frontend/mousse
     restart: unless-stopped

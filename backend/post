@@ -1,0 +1,4 @@
+# Post data.json
+# ./bin/post -c mousse_core /dataX.json
+# Wipe core
+# ./bin/post -c mousse_core -type text/xml -out yes -d $'<delete><query>*:*</query></delete>'

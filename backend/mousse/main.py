@@ -3,6 +3,7 @@ Main script for mousse.
 
 mauricesvp 2021
 """
+import re
 import sys
 import time
 import traceback
@@ -36,7 +37,7 @@ SEMESTER_MAPPING = {
 }
 
 # Scrape modules in N batches
-BATCHES = 20
+BATCHES = 40
 
 # Delay between scraping in seconds
 DELAY = 3600 * 6
@@ -83,7 +84,8 @@ def get_modules(semester: str) -> None:
         rows_str = [[x] for x in list(chunk)]
 
         # Debugging
-        # test = process_row(rows_str[0])
+        # for row in rows_str:
+        # test = process_row(row)
         # embed()
         # exit()
 
@@ -171,6 +173,7 @@ def process_row(row_info: list) -> dict:
     faculty = ""
     institute = ""
     group_str = ""
+    r = None
     if "Masterarbeit" not in name and "Bachelorarbeit" not in name:
         murl = module_url(number, version)
         r, parts = get_module(murl)
@@ -193,8 +196,49 @@ def process_row(row_info: list) -> dict:
         faculty = xinfo.get("faculty", "")
         institute = xinfo.get("institute", "")
         group_str = xinfo.get("group", "")
+
+    # Test elements
+    if r and exam_type_str == "continuous":
+
+        soup = bs(r.text, "lxml")
+
+        try:
+            faces_source = soup.find(text=re.compile("Generate XML")).parent["id"]
+        except AttributeError:
+            faces_source = soup.find(text=re.compile("XML generieren")).parent["id"]
+        faces_prefix = faces_source.split(":")[0]
+
+        test_description = soup.find(
+            "span", id=f"{faces_prefix}:pruefungsbeschreibungsbox"
+        )
+        try:
+            test_description = test_description.find_all("span")[1].text
+        except IndexError:
+            test_description = ""
+
+        try:
+            test_elements = (
+                soup.find("span", id=f"{faces_prefix}:studienleistungtabelle")
+                .find("table")
+                .find_all("tr")[1:]
+            )
+        except (IndexError, AttributeError):
+            test_elements = []
+
+        def test_part(tr):
+            parts = tr.find_all("td")
+            parts = [x.text.strip() for x in parts]
+            return parts
+
+        test_parts = [test_part(tr) for tr in test_elements]
+
+    else:
+        test_description = ""
+        test_parts = []
+
     if exam_type_str == "unknown":
         logger.error(f"unknown exam type {number}")
+
     return {
         "id": number,
         "name": name,
@@ -206,6 +250,8 @@ def process_row(row_info: list) -> dict:
         "faculty": faculty,
         "institute": institute,
         "group_str": group_str,
+        "test_description": test_description,
+        "test_parts": test_parts,
     }
 
 
@@ -261,7 +307,8 @@ def module_url(number: str, version: str) -> str:
     version = version.replace("v", "")
     return (
         f"https://moseskonto.tu-berlin.de/moses/modultransfersystem/bolognamodule/"
-        f"beschreibung/anzeigen.html?number={number}&version={version}&sprache=2"
+        # f"beschreibung/anzeigen.html?number={number}&version={version}&sprache=2"
+        f"beschreibung/anzeigen.html?number={number}&version={version}"
     )
 
 

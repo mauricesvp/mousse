@@ -35,7 +35,11 @@ def get_module_xml(url: str, r: Any = None) -> Any:
     soup = BS(text, "lxml")
 
     # j_idtxxx:j_idtxxx
-    faces_source = soup.find(text=re.compile("Generate XML")).parent["id"]
+    try:
+        faces_source = soup.find(text=re.compile("Generate XML")).parent["id"]
+    except AttributeError:
+        faces_source = soup.find(text=re.compile("XML generieren")).parent["id"]
+
     faces_prefix = faces_source.split(":")[0]
     faces_suffix_lang = int(faces_prefix[-3:]) + 16
     faces_suffix_data = int(faces_prefix[-3:]) + 13

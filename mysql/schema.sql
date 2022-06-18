@@ -9,6 +9,7 @@ CREATE TABLE modules (
         faculty char(64),
         institute char(255),
         group_str char(255),
+        test_description TEXT,
         PRIMARY KEY (id),
         INDEX (id)
 );
@@ -17,6 +18,15 @@ CREATE TABLE module_parts (
         name char(255) NOT NULL,
         module_type char(255),
         cycle char(64),
+        INDEX mod_id (module_id),
+        FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE TABLE test_parts (
+        module_id int NOT NULL,
+        name char(255) NOT NULL,
+        points int,
+        category char(64),
+        duration char(255),
         INDEX mod_id (module_id),
         FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE ON UPDATE CASCADE
 );

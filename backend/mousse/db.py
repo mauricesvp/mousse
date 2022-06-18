@@ -78,17 +78,25 @@ class MousseDB:
                 m["faculty"],
                 m["institute"],
                 m["group_str"],
+                m["test_description"],
             )
             for m in val
         ]
 
         sql_modules = """
-        REPLACE INTO modules
+        REPLACE INTO tmp
         (id, name, version, language, ects, exam_type_str,
-        faculty, institute, group_str)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        faculty, institute, group_str, test_description)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         self.cursor.executemany(sql_modules, modules)
+        self.db.commit()
+
+        sql_delete_parts = """
+        DELETE FROM module_parts WHERE module_id = %s
+        """
+        module_ids = [(int(x["id"]),) for x in val]
+        self.cursor.executemany(sql_delete_parts, module_ids)
         self.db.commit()
 
         sql_parts = """
@@ -103,6 +111,26 @@ class MousseDB:
                     (int(m[0]), part["name"], part["module_type"], part["cycle"])
                 )
         self.cursor.executemany(sql_parts, module_parts)
+        self.db.commit()
+
+        sql_delete_test_parts = """
+        DELETE FROM test_parts WHERE module_id = %s
+        """
+        self.cursor.executemany(sql_delete_test_parts, module_ids)
+        self.db.commit()
+
+        sql_test_parts = """
+        REPLACE INTO test_parts (module_id, name, points, category, duration)
+        VALUES (%s, %s, %s, %s, %s)
+        """
+        test_tmp = [(x["id"], x["test_parts"]) for x in val]
+        test_parts = []
+        for m in test_tmp:
+            for part in m[1]:
+                if len(part) != 4:
+                    part = ["", "0", "", ""]
+                test_parts.append((int(m[0]), part[0], int(part[1]), part[2], part[3]))
+        self.cursor.executemany(sql_test_parts, test_parts)
         self.db.commit()
 
         self.cursor.close()
