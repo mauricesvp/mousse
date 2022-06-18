@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup as bs
 from mousse.log import setup_logger
 from mousse.utils import html_get
 
+
 logger = setup_logger("geez_mkg")
 
 
@@ -44,24 +45,29 @@ def gen_degrees() -> Tuple[dict, dict]:
             f"https://moseskonto.tu-berlin.de/moses/modultransfersystem/studiengaenge/"
             f"anzeigen.html?studiengang={i}"
         )
-        r = html_get(url, timeout=2)
+        r = html_get(url, timeout=10)
         if not r or "error" in r.url or "shibboleth" in r.url:
             continue
 
         soup = bs(r.text, "lxml")
-        # select_stupo = soup.find(id="j_idt103:j_idt160")
-        select_stupo = soup.find(id="j_idt102:j_idt159")
+        select_stupo = soup.find(id="j_idt108:j_idt165")
         options_stupo = select_stupo.parent.find_all("option")
-        if len(options_stupo) < 1:
+        if len(options_stupo) <= 1:
             continue
+
         newest_stupo = options_stupo[-1]["value"]
         stupos.update({i: newest_stupo})
+
         # module list (e.g. SS2021)
         # select_ml = soup.find(id="j_idt103:j_idt166")
-        select_ml = soup.find(id="j_idt102:j_idt165")
-        if not select_ml:
-            select_ml = soup.find(id="j_idt102:j_idt171")
-        options_ml = select_ml.parent.find_all("option")
+
+        try:
+            select_ml = soup.find(id="j_idt108:j_idt171")
+            options_ml = select_ml.parent.find_all("option")
+        except AttributeError:
+            select_ml = soup.find(id="j_idt108:j_idt177")
+            options_ml = select_ml.parent.find_all("option")
+
         newest_ml = None
         nml = None
         if len(options_ml) > 1:
@@ -70,4 +76,26 @@ def gen_degrees() -> Tuple[dict, dict]:
             mls.update({i: nml})
 
         logger.debug(f"Found newest stupo {newest_stupo} and module list {nml}.")
+
     return stupos, mls
+
+
+if __name__ == "__main__":
+    import json
+    import time
+
+    stupos, mls = gen_degrees()
+
+    bk = stupos.copy()
+
+    SEMESTER = "68"
+    NAME = "ss22"
+
+    for key in stupos:
+        if not key in mls or mls[key] != SEMESTER:
+            del bk[key]
+
+    with open(f"stupos_{NAME}.py", "w") as f:
+        f.write("STUPOS=")
+        json.dump(bk, f)
+
