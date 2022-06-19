@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup as bs
 
 import mousse.db as db
 from mousse.log import setup_logger
-from mousse.stupos_ws21 import STUPOS
+from mousse.stupos_ss22 import STUPOS
 from mousse.utils import array_split, html_get, retry
 from mousse.xparse import get_module_xml, parse_xml
 
@@ -49,6 +49,11 @@ DELAY = 3600 * 6
 @retry(times=5)
 def get_rows(semester: str) -> list:
     """Return all rows from MTS search result."""
+
+    # TODO
+    # Change to read from csv directly
+    raise NotImplementedError
+
     url = degree_url(semester=semester, studiengang="", semesterStudiengang="", mkg="")
     r = html_get(url)
     soup = bs(r.text, "lxml")
@@ -367,6 +372,7 @@ def main() -> None:
         for s in STUPOS:  # TODO: Multithreaded
             get_degree(id=str(s), stupo=STUPOS[s])
         export_modules()
+
         logger.info(f"Going to sleep .. ({DELAY} seconds)")
         time.sleep(DELAY)
 
