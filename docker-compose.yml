@@ -3,12 +3,15 @@ version: '3.7'
 services:
   backend:
     build: ./backend
+    env_file:
+    - saml.env
     environment:
       MYSQL_DATABASE: moussedb
       MYSQL_ROOT_PASSWORD: root
     restart: unless-stopped
     volumes:
     - ./backend/data.json:/mousse/data.json
+    shm_size: '2gb'
   certbot:
     entrypoint: /bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h &
       wait $${!}; done;'

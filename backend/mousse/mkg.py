@@ -10,8 +10,7 @@ from bs4 import BeautifulSoup as bs
 from mousse.log import setup_logger
 from mousse.utils import html_get
 
-
-logger = setup_logger("geez_mkg")
+logger = setup_logger("mousse_mkg")
 
 
 def calc_sem(inp: str) -> str:
@@ -35,17 +34,18 @@ def calc_sem(inp: str) -> str:
     return str(calc)
 
 
-def gen_degrees() -> Tuple[dict, dict]:
+def gen_degrees() -> Tuple[dict, dict, dict]:
     """Return newest stupo and module list for each degree."""
     stupos = {}
     mls = {}
+    mls_id = {}
     for i in range(29, 400):
         logger.debug(f"Trying degree {i}.")
         url = (
             f"https://moseskonto.tu-berlin.de/moses/modultransfersystem/studiengaenge/"
             f"anzeigen.html?studiengang={i}"
         )
-        r = html_get(url, timeout=10)
+        r = html_get(url, bypass=True, timeout=5)
         if not r or "error" in r.url or "shibboleth" in r.url:
             continue
 
@@ -75,27 +75,35 @@ def gen_degrees() -> Tuple[dict, dict]:
             nml = calc_sem(newest_ml)
             mls.update({i: nml})
 
+            mls_id.update({i: options_ml[1]["value"]})
+
         logger.debug(f"Found newest stupo {newest_stupo} and module list {nml}.")
 
-    return stupos, mls
+    return stupos, mls, mls_id
 
 
 if __name__ == "__main__":
     import json
-    import time
 
-    stupos, mls = gen_degrees()
-
-    bk = stupos.copy()
+    stupos, mls, mls_id = gen_degrees()
 
     SEMESTER = "68"
     NAME = "ss22"
 
+    bk = stupos.copy()
     for key in stupos:
-        if not key in mls or mls[key] != SEMESTER:
+        if key not in mls or mls[key] != SEMESTER:
             del bk[key]
-
     with open(f"stupos_{NAME}.py", "w") as f:
         f.write("STUPOS=")
         json.dump(bk, f)
 
+    bk2 = bk.copy()
+    for key in bk:
+        if int(mls_id[key]) < 100:
+            del bk2[key]
+        else:
+            bk2[key] = mls_id[key]
+    with open(f"mls_{NAME}.py", "w") as f:
+        f.write("MLS=")
+        json.dump(bk2, f)

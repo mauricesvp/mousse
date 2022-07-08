@@ -3,18 +3,21 @@ Main script for mousse.
 
 mauricesvp 2021
 """
+# import csv
+# import os
 import re
 import sys
 import time
 import traceback
 from multiprocessing import Pool, cpu_count
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 
 import bs4
 from bs4 import BeautifulSoup as bs
 
 import mousse.db as db
 from mousse.log import setup_logger
+from mousse.mls_ss22 import MLS
 from mousse.stupos_ss22 import STUPOS
 from mousse.utils import array_split, html_get, retry
 from mousse.xparse import get_module_xml, parse_xml
@@ -46,16 +49,53 @@ BATCHES = 40
 DELAY = 3600 * 6
 
 
-@retry(times=5)
-def get_rows(semester: str) -> list:
-    """Return all rows from MTS search result."""
+@retry(times=5, debug=True)
+def get_rows_csv(semester: str) -> list:
+    """In case using csv export ever becomes necessary."""
+    """
+    modules = []
+    # Nummer/Version,Modultitel,LP,Verantwortliche Person,Sprache,Zugehörigkeit
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../modules.csv")
+    with open(path, "r") as f:
+        reader = csv.reader(f, quoting=csv.QUOTE_ALL)
+        next(reader, None)  # Skip header
+        for row in reader:
+            numver, name, ects, people, language, department = row
 
-    # TODO
-    # Change to read from csv directly
+            if language == "":
+                language = "DE/EN"
+
+            number, version = numver.split(" ")
+            number = number.replace("#", "")
+            version = version.replace("v", "")
+
+            dups = [x for x in modules if x[0] == number]
+            if len(dups) > 1:
+                raise ValueError("There shouldn't be more than one duplicate")
+            if dups:
+                if int(dups[0][3]) < int(version):
+                    modules.remove(dups[0])
+                else:
+                    continue
+
+            # number, name, ects, version, language
+            modules.append((number, name, ects, version, language))
+
+    return modules
+    """
     raise NotImplementedError
 
-    url = degree_url(semester=semester, studiengang="", semesterStudiengang="", mkg="")
-    r = html_get(url)
+
+@retry(times=5, debug=True)
+def get_rows(semester: str) -> list:
+    """Return all rows from MTS search result."""
+    url = degree_url(
+        semester=semester,
+        studiengang="",
+        modulversionGueltigkeitSemester=semester,
+        mls="",
+    )
+    r = html_get(url, timeout=20)
     soup = bs(r.text, "lxml")
     tbody = soup.find_all("tbody")[0]
     rows = tbody.find_all("tr")
@@ -101,18 +141,38 @@ def get_modules(semester: str) -> None:
             res = pool.map(process_row, rows_str)
 
         res = [x for x in res if x]
+        keys = [
+            "id",
+            "name",
+            "ects",
+            "version",
+            "language",
+            "module_parts",
+            "exam_type_str",
+            "faculty",
+            "institute",
+            "group_str",
+            "test_description",
+            "test_parts",
+        ]
+        for r in res:
+            for key in keys:
+                if key not in r:
+                    logger.debug(r)
+                    r[key] = ""
+
         global moussedb
         moussedb.add_modules(res)
 
 
 @retry(times=5, delay=2, debug=True)
-def get_degree(id: str, stupo: str) -> None:
+def get_degree(id: str, stupo: str, mls: str) -> None:
     """Get and update degree."""
     semester = SEMESTER
     studiengang = id
     semesterStudiengang = semester
 
-    url = degree_url(semester, studiengang, stupo, semesterStudiengang)
+    url = degree_url(semester, studiengang, mls, semesterStudiengang)
     logger.info(f"Getting degree {id}. URL: {url}")
 
     try:
@@ -124,9 +184,13 @@ def get_degree(id: str, stupo: str) -> None:
         # name = soup.find(id="j_idt114:j_idt169_input")["value"]
         # name = soup.find(id="j_idt113:j_idt168_input")["value"]
         # Big brain
-        name = soup.find(placeholder="Studiengang auswählen...")["value"]
+        fullname = (
+            soup.find_all("span", "bubble")[1].find("td", colspan=True).text.strip()
+        )
+        name = fullname.split("(")[0].strip()
 
-        ba_or_ma = name.split("(")[-1][0]
+        ba_or_ma = fullname.split("(")[1][0]
+
         degree = {
             "name": name,
             "id": int(id),
@@ -135,7 +199,7 @@ def get_degree(id: str, stupo: str) -> None:
             "stupo": stupo,
         }
         modules = []
-    except Exception as e:
+    except Exception:
         logger.debug(traceback.format_exc())
         # logger.debug(e)
         raise
@@ -159,7 +223,12 @@ def get_row_info(row: bs4.element.Tag) -> tuple:
         number = number.replace("#", "")
         version = version.replace("v", "")
         ects = tds[4].contents[0].strip()
-        language = tds[6].contents[0].strip()
+        language_block = tds[6]
+        if language_block.contents:
+            language = tds[6].contents[0].strip()
+        else:
+            language = "DE/EN"
+
     except IndexError:
         logger.error("Error with row:", row)
         raise
@@ -233,9 +302,9 @@ def process_row(row_info: list) -> dict:
         except (IndexError, AttributeError):
             test_elements = []
 
-        def test_part(tr):
-            parts = tr.find_all("td")
-            parts = [x.text.strip() for x in parts]
+        def test_part(tr: bs4.element.Tag) -> List[str]:
+            tmp = tr.find_all("td")
+            parts = [x.text.strip() for x in tmp]
             return parts
 
         test_parts = [test_part(tr) for tr in test_elements]
@@ -263,12 +332,12 @@ def process_row(row_info: list) -> dict:
     }
 
 
-@retry(times=5)
+@retry(times=5, debug=True)
 def get_module(url: str) -> Tuple[Any, list]:
     """Get module parts."""
     parts = []
 
-    r = html_get(url=url)
+    r = html_get(url=url, bypass=True)
     soup = bs(r.text, "lxml")
 
     th = soup.find("th", string="SWS")
@@ -299,13 +368,25 @@ def get_module(url: str) -> Tuple[Any, list]:
 
 
 def degree_url(
-    semester: str, studiengang: str, mkg: str, semesterStudiengang: str
+    semester: str, studiengang: str, mls: str, modulversionGueltigkeitSemester: str
 ) -> str:
     """Construct MTS degree url."""
+    if mls:
+        return (
+            f"https://moseskonto.tu-berlin.de"
+            f"/moses/modultransfersystem/bolognamodule/suchen.html?"
+            f"studiengangSemester={semester}"
+            f"&studiengangListe={mls}"
+            f"&modulversionGueltigkeitSemester={modulversionGueltigkeitSemester}"
+            f"&studiengangsbereichWithChildren=true"
+        )
     return (
-        f"https://moseskonto.tu-berlin.de/moses/modultransfersystem/bolognamodule/"
-        f"suchen.html?semester={semester}&studiengang={studiengang}&mkg={mkg}"
-        f"&semesterStudiengang={semesterStudiengang}"
+        "https://moseskonto.tu-berlin.de"
+        "/moses/modultransfersystem/bolognamodule/suchen.html?"
+        f"semester={semester}&"
+        f"studiengang={studiengang}&"
+        f"studiengangListe={mls}"
+        f"&modulversionGueltigkeitSemester={modulversionGueltigkeitSemester}"
     )
 
 
@@ -346,7 +427,7 @@ def export_modules() -> None:
     # (Within the solr container)
 
 
-@retry(5)
+@retry(5, debug=True)
 def init_db() -> None:
     """Init (python) db instance (actual db is init. already)."""
     global moussedb
@@ -358,7 +439,10 @@ def init_db() -> None:
 def main() -> None:
     """Init and run."""
     logger.info("Starting mousse main.")
+
     init_db()
+    logger.debug("DB connected.")
+
     while True:
         """Main loop:
         1. Scrape all modules and save to db ("modules" and "module_parts")
@@ -370,7 +454,8 @@ def main() -> None:
         """
         get_modules(semester=SEMESTER)
         for s in STUPOS:  # TODO: Multithreaded
-            get_degree(id=str(s), stupo=STUPOS[s])
+            get_degree(id=str(s), stupo=STUPOS[s], mls=MLS[s])
+
         export_modules()
 
         logger.info(f"Going to sleep .. ({DELAY} seconds)")

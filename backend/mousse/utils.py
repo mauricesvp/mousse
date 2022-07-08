@@ -9,6 +9,18 @@ from typing import Any, Callable
 
 import requests
 
+from mousse.saml import gib_cookies
+
+s = requests.Session()
+
+
+def login() -> None:
+    """Get and set cookies."""
+    cookies = gib_cookies()
+    global s
+    for cookie in cookies:
+        s.cookies.set(cookie["name"], cookie["value"])
+
 
 def retry(times: int = 3, delay: int = 1, debug: bool = False) -> Callable[..., Any]:
     """Retry wrapper."""
@@ -22,7 +34,7 @@ def retry(times: int = 3, delay: int = 1, debug: bool = False) -> Callable[..., 
                     return func(*args, **kwargs)
                 except Exception as e:  # noqa: E722
                     if debug:
-                        print(e)
+                        print(func, e)
                     attempts += 1
                     sleep(delay)
 
@@ -31,10 +43,17 @@ def retry(times: int = 3, delay: int = 1, debug: bool = False) -> Callable[..., 
     return run
 
 
-@retry(5, debug=True)
-def html_get(url: str, timeout: int = 4) -> requests.Response:
+@retry(times=5, debug=True)
+def html_get(url: str, timeout: int = 4, bypass: bool = False) -> requests.Response:
     """Return requests.get result."""
-    return requests.get(url=url, timeout=timeout)
+    if bypass:
+        return requests.get(url=url, timeout=timeout)
+
+    global s
+    if not s.cookies:
+        login()
+
+    return s.get(url=url, timeout=timeout)
 
 
 @retry(5)
@@ -43,11 +62,18 @@ def html_post(
     timeout: int = 3,
     data: dict = {},
     headers: dict = {},
-    cookies: dict = {},
+    # cookies: dict = {},
 ) -> requests.Response:
     """Return requests.post result."""
-    return requests.post(
-        url=url, data=data, headers=headers, cookies=cookies, timeout=timeout
+    global s
+    if not s.cookies:
+        login()
+    return s.post(
+        # url=url, data=data, headers=headers, cookies=cookies, timeout=timeout
+        url=url,
+        data=data,
+        headers=headers,
+        timeout=timeout,
     )
 
 

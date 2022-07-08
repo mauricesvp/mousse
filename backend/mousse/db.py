@@ -34,7 +34,7 @@ class MousseDB:
             self.db = self.get_db()
         self.cursor = self.db.cursor()
 
-    @retry(5)
+    @retry(5, debug=True)
     def get_db(self) -> mysql.connector.connection_cext.CMySQLConnection:
         """Return mysql connection."""
         return mysql.connector.connect(
@@ -47,7 +47,7 @@ class MousseDB:
             return self.get_db().cursor()
         return self.db.cursor()
 
-    @retry(5)
+    @retry(5, debug=True)
     def health_check(self) -> None:
         """Reconnect if necessary."""
         if not self.db:
@@ -84,7 +84,7 @@ class MousseDB:
         ]
 
         sql_modules = """
-        REPLACE INTO tmp
+        REPLACE INTO modules
         (id, name, version, language, ects, exam_type_str,
         faculty, institute, group_str, test_description)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -110,6 +110,7 @@ class MousseDB:
                 module_parts.append(
                     (int(m[0]), part["name"], part["module_type"], part["cycle"])
                 )
+
         self.cursor.executemany(sql_parts, module_parts)
         self.db.commit()
 
@@ -184,7 +185,7 @@ class MousseDB:
 
         sql_find_modules = """
             SELECT id, name, version, language, ects, exam_type_str,
-            faculty, institute, group_str FROM modules"""
+            faculty, institute, group_str, test_description FROM modules"""
         cursor_buffered.execute(sql_find_modules)
         module = cursor_buffered.fetchone()
         modules = []
@@ -198,6 +199,7 @@ class MousseDB:
             faculty = module[6]
             institute = module[7]
             group = module[8]
+            test_description = module[9]
 
             sql_find_parts = f"""
             SELECT modules.*, module_parts.*
@@ -222,9 +224,9 @@ class MousseDB:
             if len(parts) > 0:
                 parts_ = [
                     {
-                        "name_part": x[10],
-                        "type": x[11],
-                        "cycle": x[12],
+                        "name_part": x[11],
+                        "type": x[12],
+                        "cycle": x[13],
                     }
                     for x in parts
                 ]
@@ -255,6 +257,7 @@ class MousseDB:
                 "faculty": faculty,
                 "institute": institute,
                 "group_str": group,
+                "test_description": test_description,
             }
             modules.append(module_)
 

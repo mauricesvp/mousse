@@ -24,9 +24,9 @@ def get_module_xml(url: str, r: Any = None) -> Any:
     """Return XML version of module as string."""
     if not r:
         r = html_get(url)
-    text = re.search("(?<=<form)(.*)(?=form>)", r.text.replace("\n", "").strip())
-    if text and hasattr(text, "group") and text.group:
-        text = text.group(0)
+    text_raw = re.search("(?<=<form)(.*)(?=form>)", r.text.replace("\n", "").strip())
+    if text_raw and hasattr(text_raw, "group") and text_raw.group:
+        text = text_raw.group(0)
     else:
         logger.warning("Error parsing XML")
         logger.warning(url)
@@ -51,7 +51,7 @@ def get_module_xml(url: str, r: Any = None) -> Any:
 
     del soup
 
-    cookies = r.cookies
+    # cookies = r.cookies
     headers = {"Content-type": "application/x-www-form-urlencoded"}
 
     data = {
@@ -79,7 +79,7 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         url + f"&jfwid={CLIENT_WINDOW}",
         data=data,
         headers=headers,
-        cookies=cookies,
+        # cookies=cookies,
     )
     tmp = f"{faces_prefix}:j_idt{faces_suffix_data}"
     data = {
@@ -99,7 +99,7 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         url + f"&jfwid={CLIENT_WINDOW}",
         data=data,
         headers=headers,
-        cookies=cookies,
+        # cookies=cookies,
     )
     xml_data = p2.content
     return xml_data
@@ -169,6 +169,10 @@ def parse_xml(xml: str) -> dict:
     elif "4f03b91c0e" in exam_type:
         exam_type = "continuous"
     # elif "marked" in exam_type:
+    elif "2939dae15f" in exam_type:
+        exam_type = "paper"  # Referat/Hausarbeit/Abschlussarbeit
+    elif "3484bd7e51" in exam_type:
+        exam_type = "internship"  # (Internes) Praktikum
     elif "7331eb4762" in exam_type:
         exam_type = "none"
     else:

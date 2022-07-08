@@ -8,5 +8,7 @@ setup(
     description='Module Search Super Easy',
     author='mauricesvp',
     url='https://github.com/mauricesvp/mousse',
-    packages=find_packages()
+    package_data={"mousse": ["py.typed"]},
+    packages=find_packages(),
+    zip_safe=False,
 )
