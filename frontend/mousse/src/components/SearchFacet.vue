@@ -237,7 +237,7 @@ export default {
 }
 
 .non_facets_sticky {
-  max-height: 8.75rem;
+  max-height: 9.25rem;
   overflow-y: auto;
   overflow-x: hidden;
 }
