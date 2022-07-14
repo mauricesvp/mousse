@@ -19,7 +19,7 @@ import mousse.db as db
 from mousse.log import setup_logger
 from mousse.mls_ss22 import MLS
 from mousse.stupos_ss22 import STUPOS
-from mousse.utils import array_split, html_get, retry
+from mousse.utils import array_split, html_get, login, retry
 from mousse.xparse import get_module_xml, parse_xml
 
 # Old
@@ -176,7 +176,7 @@ def get_degree(id: str, stupo: str, mls: str) -> None:
     logger.info(f"Getting degree {id}. URL: {url}")
 
     try:
-        r = html_get(url=url)
+        r = html_get(url=url, timeout=10)
         soup = bs(r.text, "lxml")
         tbody = soup.find_all("tbody")[0]
         rows = tbody.find_all("tr")
@@ -452,7 +452,9 @@ def main() -> None:
           -> data.json gets copied over to solr via volumes
         5. Sleep and Repeat
         """
+        login()  # get new cookies
         get_modules(semester=SEMESTER)
+        login()  # Getting modules might take long (hours), re-login
         for s in STUPOS:  # TODO: Multithreaded
             get_degree(id=str(s), stupo=STUPOS[s], mls=MLS[s])
 

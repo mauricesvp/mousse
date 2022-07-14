@@ -41,6 +41,9 @@ def gib_cookies() -> List[dict]:
     username = driver.find_element(By.NAME, "j_username")
     password = driver.find_element(By.NAME, "j_password")
 
+    if "SAML_USERNAME" not in os.environ or "SAML_PASSWORD" not in os.environ:
+        raise ValueError("Please set env vars SAML_{USERNAME,PASSWORD}")
+
     username.send_keys(os.environ.get("SAML_USERNAME"))
     password.send_keys(os.environ.get("SAML_PASSWORD"))
 

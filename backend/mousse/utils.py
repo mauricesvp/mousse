@@ -18,6 +18,8 @@ def login() -> None:
     """Get and set cookies."""
     cookies = gib_cookies()
     global s
+    del s
+    s = requests.Session()
     for cookie in cookies:
         s.cookies.set(cookie["name"], cookie["value"])
 
