@@ -81,7 +81,7 @@ export default {
     var valid = ["Degree", "ECTS"];
     var hideByDefault = ["Department", "Institute", "Group"];
     var facets = document.getElementsByClassName("sui-multi-checkbox-facet");
-    facets.forEach(facet => {
+    Array.from(facets).forEach(facet => {
       var facetName = facet.firstChild.firstChild.innerHTML.trim();
       if (facetName === "Exam Type") {
         // This is somewhat hacky tbh
@@ -97,7 +97,7 @@ export default {
       var nonSticky = facet.getElementsByClassName("non_facets_sticky")[0];
       var elements = nonSticky.getElementsByTagName("label");
       var sticky = facet.getElementsByClassName("facets_sticky")[0];
-      elements.forEach(element => {
+      Array.from(elements).forEach(element => {
         var input = element.getElementsByTagName("input")[0];
         if (input.checked) {
           sticky.appendChild(element);
