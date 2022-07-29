@@ -41,8 +41,8 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         faces_source = soup.find(text=re.compile("XML generieren")).parent["id"]
 
     faces_prefix = faces_source.split(":")[0]
-    faces_suffix_lang = int(faces_prefix[-3:]) + 16
-    faces_suffix_data = int(faces_prefix[-3:]) + 13
+    faces_suffix_lang = int(faces_prefix[-3:]) + 17
+    faces_suffix_data = int(faces_prefix[-3:]) + 14
 
     VIEW_STATE = str(soup.find("input", {"name": "javax.faces.ViewState"})["value"])
     CLIENT_WINDOW = str(
