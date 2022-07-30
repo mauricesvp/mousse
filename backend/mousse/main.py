@@ -152,6 +152,7 @@ def get_modules(semester: str) -> None:
             "faculty",
             "institute",
             "group_str",
+            "module_description",
             "test_description",
             "test_parts",
         ]
@@ -245,6 +246,7 @@ def process_row(row_info: list) -> dict:
     except ValueError:
         print(row_info)
         raise
+
     parts = []
     exam_type_str = ""
     faculty = ""
@@ -316,6 +318,30 @@ def process_row(row_info: list) -> dict:
     if exam_type_str == "unknown":
         logger.error(f"unknown exam type {number}")
 
+    # Learning outcomes and content
+    if r is not None:
+
+        def get_description(soup: bs4.element.Tag) -> str:
+            first_div = soup.select("div[id*='BoxKopfinformationen']")
+            if first_div is None:
+                return ""
+            first_div = first_div[0].find_next_sibling("div")
+            second_div = first_div.find_next_sibling("div")
+
+            def get_text(element: bs4.element.Tag) -> str:
+                area = element.find(class_="preformatedTextarea")
+                if area is not None:
+                    return area.text.strip()
+                return ""
+
+            first_text = get_text(first_div)
+            second_text = get_text(second_div)
+
+            return first_text + "\n" + second_text
+
+        soup = bs(r.text, "lxml")
+        description = get_description(soup)
+
     return {
         "id": number,
         "name": name,
@@ -327,6 +353,7 @@ def process_row(row_info: list) -> dict:
         "faculty": faculty,
         "institute": institute,
         "group_str": group_str,
+        "module_description": description,
         "test_description": test_description,
         "test_parts": test_parts,
     }

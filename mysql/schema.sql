@@ -9,6 +9,7 @@ CREATE TABLE modules (
         faculty char(64),
         institute char(255),
         group_str char(255),
+        module_description TEXT,
         test_description TEXT,
         PRIMARY KEY (id),
         INDEX (id)
