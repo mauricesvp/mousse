@@ -319,6 +319,7 @@ def process_row(row_info: list) -> dict:
         logger.error(f"unknown exam type {number}")
 
     # Learning outcomes and content
+    description = ""
     if r is not None:
 
         def get_description(soup: bs4.element.Tag) -> str:
