@@ -195,7 +195,7 @@ def get_degree(id: str, stupo: str, mls: str) -> None:
         ba_or_ma = fullname.split("(")[1][0]
 
         degree = {
-            "name": name,
+            "name": fullname,
             "id": int(id),
             "semester": SEMESTER_MAPPING[semester],
             "ba_or_ma": ba_or_ma,
