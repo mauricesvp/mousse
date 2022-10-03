@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup as bs
 import mousse.db as db
 from mousse.log import setup_logger
 from mousse.mls_ws22 import MLS
-from mousse.stupos_ss22 import STUPOS
+from mousse.stupos_ws22 import STUPOS
 from mousse.utils import array_split, html_get, login, retry
 from mousse.xparse import get_module_xml, parse_xml
 
@@ -32,7 +32,8 @@ logger = setup_logger("mousse_main")
 
 moussedb: db.MousseDB
 
-SEMESTER = "68"  # SOSE2022
+SEMESTER = "69"  # WISE2022
+# SEMESTER = "68"  # SOSE2022
 # SEMESTER = "67"  # WISE2021
 # SEMESTER = "66"  # SOSE2021
 
