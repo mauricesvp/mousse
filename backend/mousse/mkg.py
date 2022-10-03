@@ -87,8 +87,8 @@ if __name__ == "__main__":
 
     stupos, mls, mls_id = gen_degrees()
 
-    SEMESTER = "68"
-    NAME = "ss22"
+    SEMESTER = "69"
+    NAME = "ws22"
 
     bk = stupos.copy()
     for key in stupos:

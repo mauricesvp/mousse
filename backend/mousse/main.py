@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup as bs
 
 import mousse.db as db
 from mousse.log import setup_logger
-from mousse.mls_ss22 import MLS
+from mousse.mls_ws22 import MLS
 from mousse.stupos_ss22 import STUPOS
 from mousse.utils import array_split, html_get, login, retry
 from mousse.xparse import get_module_xml, parse_xml
@@ -40,6 +40,7 @@ SEMESTER_MAPPING = {
     "66": "SS2021",
     "67": "WS2021",
     "68": "SS2022",
+    "69": "WS2022",
 }
 
 # Scrape modules in N batches
