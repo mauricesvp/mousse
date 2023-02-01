@@ -33,7 +33,8 @@ def gib_cookies() -> List[dict]:
 
     time.sleep(15)
 
-    login = driver.find_element(By.CSS_SELECTOR, "a[id*='shibboleth-login-form:j_idt'")
+    # login = driver.find_element(By.CSS_SELECTOR, "a[id*='shibboleth-login-form:j_idt'")
+    login = driver.find_element(By.CSS_SELECTOR, "a[class*='nav-top-user-login'")
     login.click()
 
     time.sleep(30)
@@ -54,9 +55,11 @@ def gib_cookies() -> List[dict]:
 
     time.sleep(30)
 
-    logger.debug("Yummy.")
-
     cookies = driver.get_cookies()
+
+    time.sleep(10)
+
+    logger.debug("Yummy.")
 
     driver.quit()
 
