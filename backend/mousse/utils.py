@@ -46,7 +46,7 @@ def retry(times: int = 3, delay: int = 1, debug: bool = False) -> Callable[..., 
 
 
 @retry(times=5, debug=True)
-def html_get(url: str, timeout: int = 4, bypass: bool = False) -> requests.Response:
+def html_get(url: str, timeout: int = 15, bypass: bool = False) -> requests.Response:
     """Return requests.get result."""
     if bypass:
         return requests.get(url=url, timeout=timeout)
