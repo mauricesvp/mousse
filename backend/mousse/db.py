@@ -35,13 +35,13 @@ class MousseDB:
         self.cursor = self.db.cursor()
 
     @retry(5, debug=True)
-    def get_db(self) -> mysql.connector.connection_cext.CMySQLConnection:
+    def get_db(self) -> CMySQLConnection:
         """Return mysql connection."""
         return mysql.connector.connect(
             host="mysql", password=PASSWORD, database=MYSQL_DB
         )
 
-    def get_cursor(self) -> mysql.connector.cursor_cext.CMySQLCursor:
+    def get_cursor(self) -> CMySQLCursor:
         """Return connection cursor."""
         if not self.db:
             return self.get_db().cursor()

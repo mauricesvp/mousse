@@ -18,6 +18,62 @@ logger = setup_logger("mousse_xparse")
 
 XML_PARSER = lxml.etree.XMLParser(recover=True)
 
+@retry(times=5, debug=True)
+def get_degree_xml(url: str, timeout: int = 10) -> Any:
+    """Get degree via POST."""
+    r = html_get(url=url, timeout=timeout)
+
+    soup = BS(r.text, "lxml")
+
+    # j_idtxxx:j_idtxxx
+    faces_source = soup.find(text=re.compile("Module suchen")).parent["id"]
+
+    faces_prefix = faces_source.split(":")[0]
+    # TODO: plz no hardcode
+    # faces_suffix_lang = int(faces_prefix.replace("j_idt", "")) + 16
+    faces_suffix_lang = int(faces_prefix.replace("j_idt", "")) + 3
+    faces_suffix_data = int(faces_prefix.replace("j_idt", "")) + 19
+
+    VIEW_STATE = str(soup.find("input", {"name": "javax.faces.ViewState"})["value"])
+    CLIENT_WINDOW = str(
+        soup.find("input", {"name": "javax.faces.ClientWindow"})["value"]
+    )
+
+    del soup
+
+    # cookies = r.cookies
+    headers = {"Content-type": "application/x-www-form-urlencoded",
+            "Referer": url}
+
+    data = {
+        "javax.faces.partial.ajax": "true",
+        "javax.faces.source": f"{faces_source}",
+        # "javax.faces.source": "j_idt106:j_idt117",
+        # "javax.faces.source": "j_idt105:j_idt116",
+        "javax.faces.partial.execute": "@all",
+        "javax.faces.partial.render": f"{faces_prefix}",
+        # "javax.faces.partial.render": "j_idt106",
+        # "javax.faces.partial.render": "j_idt105",
+        f"{faces_source}": f"{faces_source}",
+        # "j_idt106:j_idt117": "j_idt106:j_idt117",
+        # "j_idt105:j_idt116": "j_idt105:j_idt116",
+        f"{faces_prefix}": f"{faces_prefix}",
+        # "j_idt106": "j_idt106",
+        # "j_idt105": "j_idt105",
+        f"{faces_prefix}:j_idt{faces_suffix_lang}": "1",
+        # "j_idt106:j_idt122": "1",  # 1: Deutsch, 2: English
+        # "j_idt105:j_idt121": "1",
+        "javax.faces.ViewState": VIEW_STATE,
+        "javax.faces.ClientWindow": CLIENT_WINDOW,
+    }
+    p1 = html_post(
+        url + f"&jfwid={CLIENT_WINDOW}",
+        data=data,
+        headers=headers,
+        # cookies=cookies,
+    )
+
+    return p1
 
 @retry(times=5, debug=True)
 def get_module_xml(url: str, r: Any = None) -> Any:
@@ -41,8 +97,10 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         faces_source = soup.find(text=re.compile("XML generieren")).parent["id"]
 
     faces_prefix = faces_source.split(":")[0]
-    faces_suffix_lang = int(faces_prefix[-3:]) + 16
-    faces_suffix_data = int(faces_prefix[-3:]) + 13
+    # TODO: plz no hardcode
+    # faces_suffix_lang = int(faces_prefix.replace("j_idt", "")) + 16
+    faces_suffix_lang = int(faces_prefix.replace("j_idt", "")) + 3
+    faces_suffix_data = int(faces_prefix.replace("j_idt", "")) + 19
 
     VIEW_STATE = str(soup.find("input", {"name": "javax.faces.ViewState"})["value"])
     CLIENT_WINDOW = str(
@@ -75,7 +133,7 @@ def get_module_xml(url: str, r: Any = None) -> Any:
         "javax.faces.ViewState": VIEW_STATE,
         "javax.faces.ClientWindow": CLIENT_WINDOW,
     }
-    html_post(
+    p1 = html_post(
         url + f"&jfwid={CLIENT_WINDOW}",
         data=data,
         headers=headers,
@@ -108,12 +166,14 @@ def get_module_xml(url: str, r: Any = None) -> Any:
 @retry(times=5)
 def parse_xml(xml: str) -> dict:
     """Get module information."""
+
     try:
         root = lxml.etree.fromstring(xml, XML_PARSER)
     except Exception as e:
         logger.warn("Couldn't parse XML.")
         logger.warn(e)
         return {}
+
     # Namespaces
     # ns = {"ns2": "http://data.europa.eu/europass/model/credentials#"}
     ns = {"ns5": "http://data.europa.eu/snb"}
@@ -132,6 +192,7 @@ def parse_xml(xml: str) -> dict:
     except Exception as e:
         logger.warn("Couldn't determine departments.", e)
         raise
+
     faculty, institute, group = None, None, None
     if len(fif) > 1:
         faculty = fif[1]
