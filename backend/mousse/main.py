@@ -15,7 +15,7 @@ from typing import Any, List, Tuple
 import bs4
 from bs4 import BeautifulSoup as bs
 
-import mousse.db as db
+from mousse.db import MousseDB
 from mousse.log import setup_logger
 from mousse.mls_ws22 import MLS
 from mousse.stupos_ws22 import STUPOS
@@ -30,7 +30,7 @@ from mousse.xparse import get_module_xml, parse_xml
 sys.setrecursionlimit(20000)
 logger = setup_logger("mousse_main")
 
-moussedb: db.MousseDB
+moussedb: MousseDB
 
 SEMESTER = "69"  # WISE2022
 # SEMESTER = "68"  # SOSE2022
@@ -98,6 +98,9 @@ def get_rows(semester: str) -> list:
         mls="",
     )
     r = html_get(url, timeout=20)
+    # import requests
+    # r = requests.get(url=url, timeout=20)
+
     soup = bs(r.text, "lxml")
     tbody = soup.find_all("tbody")[0]
     rows = tbody.find_all("tr")
@@ -180,19 +183,48 @@ def get_degree(id: str, stupo: str, mls: str) -> None:
 
     try:
         r = html_get(url=url, timeout=10)
+        # from mousse.xparse import get_degree_xml
+        # r = get_degree_xml(url=url, timeout=10)
+
+        """
+        import requests
+        requests.get("https://google.com")
+        from mousse.saml import gib_cookies
+        cookies = gib_cookies()
+        print(cookies)
+        s = requests.Session()
+        for cookie in cookies:
+            s.cookies.set(cookie["name"], cookie["value"])
+        print("what")
+        r = requests.get(url="https://google.com")
+        print("the")
+        r = s.get(url=url)
+        print("fuck")
+        logger.debug(str(r))
+        logger.debug(r.status_code)
+        logger.debug(len(r.text))
+        """
+
         soup = bs(r.text, "lxml")
         tbody = soup.find_all("tbody")[0]
         rows = tbody.find_all("tr")
         # The j_idt changes all the time
         # name = soup.find(id="j_idt114:j_idt169_input")["value"]
         # name = soup.find(id="j_idt113:j_idt168_input")["value"]
-        # Big brain
-        fullname = (
-            soup.find_all("span", "bubble")[1].find("td", colspan=True).text.strip()
-        )
+        # Big brain (or maybe not so much)
+        # fullname = (
+        # soup.find_all("span", "bubble")[1].find("td", colspan=True).text.strip()
+        # )
+        fullname = soup.find_all("td", colspan=True)[-1].text.strip()
+        # logger.debug(soup.find_all("td", colspan=True))
+        # logger.debug(fullname)
         name = fullname.split("(")[0].strip()
 
-        ba_or_ma = fullname.split("(")[1][0]
+        try:
+            ba_or_ma = fullname.split("(")[1][0]
+        except IndexError:
+            logger.debug(f"IndexError fullname {fullname}")
+            raise
 
         degree = {
             "name": fullname,
@@ -270,7 +302,8 @@ def process_row(row_info: list) -> dict:
             xinfo = parse_xml(data)
 
         if xinfo is None:
-            logger.debug(f"No exam/chair info ({number})")
+            logger.debug(f"No exam/chair info (module {number}, data {len(data)})")
+            logger.debug(str(xinfo))
             xinfo = {}
 
         exam_type_str = xinfo.get("exam_type_str", "")
@@ -284,9 +317,9 @@ def process_row(row_info: list) -> dict:
         soup = bs(r.text, "lxml")
 
         try:
-            faces_source = soup.find(text=re.compile("Generate XML")).parent["id"]
+            faces_source = soup.find(string=re.compile("Generate XML")).parent["id"]
         except AttributeError:
-            faces_source = soup.find(text=re.compile("XML generieren")).parent["id"]
+            faces_source = soup.find(string=re.compile("XML generieren")).parent["id"]
         faces_prefix = faces_source.split(":")[0]
 
         test_description = soup.find(
@@ -328,7 +361,10 @@ def process_row(row_info: list) -> dict:
             first_div = soup.select("div[id*='BoxKopfinformationen']")
             if first_div is None:
                 return ""
-            first_div = first_div[0].find_next_sibling("div")
+            try:
+                first_div = first_div[0].find_next_sibling("div")
+            except IndexError:
+                return ""
             second_div = first_div.find_next_sibling("div")
 
             def get_text(element: bs4.element.Tag) -> str:
@@ -368,14 +404,19 @@ def get_module(url: str) -> Tuple[Any, list]:
     parts = []
 
     r = html_get(url=url, bypass=True)
+    # import requests
+    # r = requests.get(url=url)
     soup = bs(r.text, "lxml")
 
     th = soup.find("th", string="SWS")
     try:
-        tbody = th.parent.parent
+        # tbody = th.parent.parent
+        table = th.parent.parent.parent
     except:  # noqa: E722
         return None, []
-    rows = tbody.find_all("tr")
+
+    # rows = tbody.find_all("tr")
+    rows = table.find_all("tr")
     len_rows = len(rows)
     for i in range(1, len_rows):
         try:
@@ -406,7 +447,8 @@ def degree_url(
             f"https://moseskonto.tu-berlin.de"
             f"/moses/modultransfersystem/bolognamodule/suchen.html?"
             f"studiengangSemester={semester}"
-            f"&studiengangListe={mls}"
+            # f"&studiengangListe={mls}"
+            f"&studiengangBolognamodulliste={mls}"
             f"&modulversionGueltigkeitSemester={modulversionGueltigkeitSemester}"
             f"&studiengangsbereichWithChildren=true"
         )
@@ -415,7 +457,8 @@ def degree_url(
         "/moses/modultransfersystem/bolognamodule/suchen.html?"
         f"semester={semester}&"
         f"studiengang={studiengang}&"
-        f"studiengangListe={mls}"
+        # f"studiengangListe={mls}"
+        f"studiengangBolognamodulliste={mls}"
         f"&modulversionGueltigkeitSemester={modulversionGueltigkeitSemester}"
     )
 
@@ -461,9 +504,9 @@ def export_modules() -> None:
 def init_db() -> None:
     """Init (python) db instance (actual db is init. already)."""
     global moussedb
-    moussedb = db.MousseDB()
+    moussedb = MousseDB()
     while not moussedb:
-        moussedb = db.MousseDB()
+        moussedb = MousseDB()
 
 
 def main() -> None:
