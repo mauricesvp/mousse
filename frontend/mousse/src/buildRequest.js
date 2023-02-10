@@ -100,7 +100,7 @@ export default function buildRequest(state) {
   var query;
   if (searchTerm !== "") {
       // Remove any non-alphanumeric char (excluding whitespace)
-      var term = searchTerm.replace(/[^0-9a-z ]/gi, '');
+      var term = searchTerm.replace(/[^0-9a-zäöüÄÖÜß ]/gi, '');
       var splits = term.split(" ");
       query = "(*" + splits.join("* AND *") + "*)";
   }
