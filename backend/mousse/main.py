@@ -387,7 +387,7 @@ def process_row(row_info: list) -> dict:
             first_text = get_text(first_div)
             second_text = get_text(second_div)
 
-            return first_text + "\n" + second_text
+            return "\n".join(filter(None, [first_text, second_text]))
 
         soup = bs(r.text, "lxml")
         description = get_description(soup)
