@@ -313,7 +313,6 @@ def process_row(row_info: list) -> dict:
 
     # Test elements
     if r and exam_type_str == "continuous":
-
         soup = bs(r.text, "lxml")
 
         try:
@@ -358,14 +357,26 @@ def process_row(row_info: list) -> dict:
     if r is not None:
 
         def get_description(soup: bs4.element.Tag) -> str:
-            first_div = soup.select("div[id*='BoxKopfinformationen']")
-            if first_div is None:
-                return ""
+            # New
+            h3s = soup.find_all("h3")
             try:
-                first_div = first_div[0].find_next_sibling("div")
-            except IndexError:
+                if h3s[2].text not in ["Lehrinhalte", "Learning Outcomes"]:
+                    return ""
+                # No comment ...
+                first_div = h3s[3].parent.parent.parent.parent.parent
+                second_div = first_div.find_next_sibling("div")
+            except (IndexError, AttributeError):
                 return ""
-            second_div = first_div.find_next_sibling("div")
+
+            # Old
+            # first_div = soup.select("div[id*='BoxKopfinformationen']")
+            # if first_div is None:
+            # return ""
+            # try:
+            # first_div = first_div[0].find_next_sibling("div")
+            # except IndexError:
+            # return ""
+            # second_div = first_div.find_next_sibling("div")
 
             def get_text(element: bs4.element.Tag) -> str:
                 area = element.find(class_="preformatedTextarea")
