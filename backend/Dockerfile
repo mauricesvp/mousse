@@ -1,8 +1,5 @@
 FROM python:3.8-slim
 
-COPY . /mousse/
-WORKDIR /mousse
-
 # Debugging
 # RUN apt-get update && apt-get install -y vim procps
 
@@ -36,8 +33,11 @@ RUN ln -fs /opt/geckodriver-$GK_VERSION /usr/bin/geckodriver
 # RUN add-apt-repository ppa:mozillateam/ppa
 # RUN apt-get update && apt-get install -y --no-install-recommends firefox
 
-
 RUN pip3 install --upgrade pip
+
+COPY . /mousse/
+WORKDIR /mousse
+
 RUN pip3 install -r requirements.txt
 RUN pip3 install .
 
