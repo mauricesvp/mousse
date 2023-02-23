@@ -1,5 +1,7 @@
 FROM python:3.8-slim
 
+WORKDIR /mousse
+
 # Debugging
 # RUN apt-get update && apt-get install -y vim procps
 
@@ -35,10 +37,10 @@ RUN ln -fs /opt/geckodriver-$GK_VERSION /usr/bin/geckodriver
 
 RUN pip3 install --upgrade pip
 
-COPY . /mousse/
-WORKDIR /mousse
-
+COPY requirements.txt /mousse/
 RUN pip3 install -r requirements.txt
+
+COPY . /mousse/
 RUN pip3 install .
 
 RUN chmod +x mousse/main.py
