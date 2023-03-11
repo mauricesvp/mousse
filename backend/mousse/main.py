@@ -326,13 +326,12 @@ def process_row(row_info: list) -> dict:
     if r is not None:
 
         def get_description(soup: bs4.element.Tag) -> str:
-            # New
             h3s = soup.find_all("h3")
             try:
                 if h3s[2].text not in ["Lernergebnisse", "Learning Outcomes"]:
                     return ""
                 # No comment ...
-                first_div = h3s[3].parent.parent.parent.parent.parent
+                first_div = h3s[2].parent.parent.parent.parent.parent
                 second_div = first_div.find_next_sibling("div")
             except (IndexError, AttributeError):
                 return ""
