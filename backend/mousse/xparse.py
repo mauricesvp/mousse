@@ -18,6 +18,7 @@ logger = setup_logger("mousse_xparse")
 
 XML_PARSER = lxml.etree.XMLParser(recover=True)
 
+
 @retry(times=5, debug=True)
 def get_degree_xml(url: str, timeout: int = 10) -> Any:
     """Get degree via POST."""
@@ -42,8 +43,7 @@ def get_degree_xml(url: str, timeout: int = 10) -> Any:
     del soup
 
     # cookies = r.cookies
-    headers = {"Content-type": "application/x-www-form-urlencoded",
-            "Referer": url}
+    headers = {"Content-type": "application/x-www-form-urlencoded", "Referer": url}
 
     data = {
         "javax.faces.partial.ajax": "true",
@@ -74,6 +74,7 @@ def get_degree_xml(url: str, timeout: int = 10) -> Any:
     )
 
     return p1
+
 
 @retry(times=5, debug=True)
 def get_module_xml(url: str, r: Any = None) -> Any:
