@@ -3,7 +3,7 @@ import runRequest from "./runRequest";
 import buildState from "./buildState";
 
 const config = {
-    debug: true,
+    // debug: true,
     hasA11yNotifications: true,
     alwaysSearchOnInitialLoad: true,
     onSearch: async state => {
