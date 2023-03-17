@@ -149,7 +149,7 @@ class MousseDB:
             val["name"],
             val["semester"],
             val["ba_or_ma"],
-            val["stupo"],
+            int(val["stupo"]),
         )
 
         sql_degree = """
@@ -162,11 +162,11 @@ class MousseDB:
         sql_delete_degree_modules = """
         DELETE FROM degree_modules WHERE degree_id = %s
         """
-        self.cursor.execute(sql_delete_degree_modules, (degree[0],))
+        self.cursor.execute(sql_delete_degree_modules, (int(val["stupo"]),))
         self.db.commit()
 
         degree_modules = [
-            (int(val["id"]), int(x[0].replace("#", ""))) for x in val["modules"]
+            (int(val["stupo"]), int(x[0].replace("#", ""))) for x in val["modules"]
         ]
         sql_degree_modules = """
         REPLACE INTO degree_modules (degree_id, module_id)
@@ -216,7 +216,7 @@ class MousseDB:
             degrees.name, degrees.semester,
             degrees.ba_or_ma, degrees.stupo
             FROM degree_modules
-            LEFT JOIN degrees on degree_modules.degree_id = degrees.id
+            LEFT JOIN degrees on degree_modules.degree_id = degrees.stupo
             LEFT JOIN modules on degree_modules.module_id = modules.id
             WHERE module_id = {module_id}
             """

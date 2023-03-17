@@ -17,13 +17,11 @@ from bs4 import BeautifulSoup as bs
 
 from mousse.db import MousseDB
 from mousse.log import setup_logger
-from mousse.mls_ws22 import MLS
-from mousse.stupos_ws22 import STUPOS
+from mousse.mls_ss23 import MLS
+from mousse.stupos_ss23 import STUPOS
 from mousse.utils import array_split, html_get, login, retry
 from mousse.xparse import get_module_xml, parse_xml
 
-# Old
-# from mousse.stupos import STUPOS
 # Debugging
 # from IPython import embed
 
@@ -32,16 +30,10 @@ logger = setup_logger("mousse_main")
 
 moussedb: MousseDB
 
-SEMESTER = "69"  # WISE2022
-# SEMESTER = "68"  # SOSE2022
-# SEMESTER = "67"  # WISE2021
-# SEMESTER = "66"  # SOSE2021
+SEMESTER = "70"  # SOSE2023
 
 SEMESTER_MAPPING = {
-    "66": "SS2021",
-    "67": "WS2021",
-    "68": "SS2022",
-    "69": "WS2022",
+    "70": "SS2023",
 }
 
 # Scrape modules in N batches
@@ -173,10 +165,8 @@ def get_modules(semester: str) -> None:
 def get_degree(id: str, stupo: str, mls: str) -> None:
     """Get and update degree."""
     semester = SEMESTER
-    studiengang = id
-    semesterStudiengang = semester
 
-    url = degree_url(semester, studiengang, mls, semesterStudiengang)
+    url = degree_url(SEMESTER, id, mls, SEMESTER)
     logger.info(f"Getting degree {id}. URL: {url}")
 
     try:
@@ -187,7 +177,8 @@ def get_degree(id: str, stupo: str, mls: str) -> None:
         rows = tbody.find_all("tr")
 
         fullname = soup.find_all("td", colspan=True)[-1].text.strip()
-        name = fullname.split("(")[0].strip()
+        # name = fullname.split("(")[0].strip()
+        # Use fullname bc some degrees are included multiple times with different StuPOs
 
         try:
             ba_or_ma = fullname.split("(")[1][0]
@@ -198,7 +189,7 @@ def get_degree(id: str, stupo: str, mls: str) -> None:
         degree = {
             "name": fullname,
             "id": int(id),
-            "semester": SEMESTER_MAPPING[semester],
+            "semester": SEMESTER_MAPPING[SEMESTER],
             "ba_or_ma": ba_or_ma,
             "stupo": stupo,
         }
@@ -490,8 +481,11 @@ def main() -> None:
         login()  # get new cookies
         get_modules(semester=SEMESTER)
         login()  # Getting modules might take long (hours), re-login
-        for s in STUPOS:  # TODO: Multithreaded
-            get_degree(id=str(s), stupo=STUPOS[s], mls=MLS[s])
+        SK, SV = list(STUPOS.keys()), list(STUPOS.values())
+        MK, MV = list(MLS.keys()), list(MLS.values())
+        for i in range(len(STUPOS)):  # TODO: Multithreaded
+            assert SV[i] == MV[i]
+            get_degree(id=SV[i], stupo=SK[i], mls=MK[i])
 
         export_modules()
 
