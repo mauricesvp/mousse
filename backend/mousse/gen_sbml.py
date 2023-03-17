@@ -13,8 +13,11 @@ def main():
 
     for i in range(4440, 6000):
         url = (
-            f"https://moseskonto.tu-berlin.de/moses/modultransfersystem/bolognamodule/suchen.html?text=&modulversionGueltigkeitSemester={SEM}"
-            f"&studiengangSemester={SEM}&studiengangBolognamodulliste={i}&studiengangsbereichWithChildren=true"
+            "https://moseskonto.tu-berlin.de/moses/modultransfersystem/bolognamodule/suchen.html?text="
+            f"&modulversionGueltigkeitSemester={SEM}"
+            f"&studiengangSemester={SEM}"
+            f"&studiengangBolognamodulliste={i}"
+            "&studiengangsbereichWithChildren=true"
         )
         r = s.get(url, allow_redirects=False)
 

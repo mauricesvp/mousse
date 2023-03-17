@@ -164,8 +164,6 @@ def get_modules(semester: str) -> None:
 @retry(times=5, delay=2, debug=True)
 def get_degree(id: str, stupo: str, mls: str) -> None:
     """Get and update degree."""
-    semester = SEMESTER
-
     url = degree_url(SEMESTER, id, mls, SEMESTER)
     logger.info(f"Getting degree {id}. URL: {url}")
 
