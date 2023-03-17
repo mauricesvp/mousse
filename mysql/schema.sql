@@ -36,10 +36,11 @@ CREATE TABLE degrees (
         name char(255) NOT NULL,
         semester char(64),
         ba_or_ma char(64),
-        stupo char(64),
-        PRIMARY KEY (id),
+        stupo int NOT NULL,
+        PRIMARY KEY (stupo),
         INDEX (id),
-        INDEX (name)
+        INDEX (name),
+        INDEX (stupo)
 );
 CREATE TABLE degree_modules (
         degree_id int NOT NULL,
