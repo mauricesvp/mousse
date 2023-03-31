@@ -10,7 +10,7 @@ Filter modules by degree, cycle, type, ects, department and method of examinatio
 
 ## Disclaimer
 
-This repository and its contributers, as well as https://tu.eno.pw do not have any official affiliation with Technische Universität Berlin. All information on https://tu.eno.pw is subject to change.
+This repository and its contributors, as well as https://tu.eno.pw do not have any official affiliation with Technische Universität Berlin. All information on https://tu.eno.pw is subject to change.
 
 ## License
 
