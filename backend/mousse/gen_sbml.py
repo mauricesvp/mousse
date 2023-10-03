@@ -1,7 +1,10 @@
 import re
 
 import requests
+import time
 from bs4 import BeautifulSoup as bs
+
+from mousse.utils import html_get
 
 
 def main():
@@ -9,9 +12,10 @@ def main():
 
     saved = {}
 
-    SEM = "70"
+    SEM = "71"
 
-    for i in range(4440, 6000):
+    for i in range(4440, 5500):
+        time.sleep(1)
         url = (
             "https://moseskonto.tu-berlin.de/moses/modultransfersystem/bolognamodule/suchen.html?text="
             f"&modulversionGueltigkeitSemester={SEM}"
@@ -19,7 +23,8 @@ def main():
             f"&studiengangBolognamodulliste={i}"
             "&studiengangsbereichWithChildren=true"
         )
-        r = s.get(url, allow_redirects=False)
+        # r = s.get(url, allow_redirects=False)
+        r = html_get(url, bypass=True)
 
         if "Verwendung in Studiengang" not in r.text:
             continue

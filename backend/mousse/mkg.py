@@ -6,10 +6,12 @@ mauricesvp 2021
 from typing import Tuple
 
 import requests
+import time
 from bs4 import BeautifulSoup as bs
 
 from mousse.log import setup_logger
 from mousse.sbml import SBML
+from mousse.utils import html_get
 
 logger = setup_logger("mousse_mkg")
 
@@ -22,11 +24,13 @@ def gen_degrees() -> Tuple[dict, dict, dict]:
     mls_id = {}
     for i in range(20, 260):
         logger.debug(f"Trying degree {i}.")
+        time.sleep(5)
         url = (
             f"https://moseskonto.tu-berlin.de/moses/modultransfersystem/studiengaenge/"
             f"anzeigen.html?studiengang={i}"
         )
-        r = s.get(url)
+        # r = s.get(url)
+        r = html_get(url, bypass=True)
         if not r or "error" in r.url or "shibboleth" in r.url:
             continue
 
@@ -52,7 +56,7 @@ if __name__ == "__main__":
 
     stupos, mls_id = gen_degrees()
 
-    NAME = "ss23"
+    NAME = "ws23"
 
     with open(f"stupos_{NAME}.py", "w") as f:
         f.write("STUPOS=")

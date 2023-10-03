@@ -24,7 +24,7 @@ def login() -> None:
         s.cookies.set(cookie["name"], cookie["value"])
 
 
-def retry(times: int = 3, delay: int = 1, debug: bool = False) -> Callable[..., Any]:
+def retry(times: int = 5, delay: int = 3, debug: bool = False) -> Callable[..., Any]:
     """Retry wrapper."""
 
     def run(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -45,8 +45,8 @@ def retry(times: int = 3, delay: int = 1, debug: bool = False) -> Callable[..., 
     return run
 
 
-@retry(times=5, debug=True)
-def html_get(url: str, timeout: int = 15, bypass: bool = False) -> requests.Response:
+@retry(times=5, delay=5, debug=True)
+def html_get(url: str, timeout: int = 25, bypass: bool = False) -> requests.Response:
     """Return requests.get result."""
     if bypass:
         return requests.get(url=url, timeout=timeout)

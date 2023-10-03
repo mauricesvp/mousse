@@ -9,6 +9,7 @@ import os
 import time
 from typing import List
 
+import selenium
 from selenium import webdriver
 from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.common.by import By
@@ -31,10 +32,16 @@ def gib_cookies() -> List[dict]:
     logger.debug("Loading moses ...")
     driver.get(moses)
 
-    time.sleep(15)
+    time.sleep(30)
 
     # login = driver.find_element(By.CSS_SELECTOR, "a[id*='shibboleth-login-form:j_idt'")
-    login = driver.find_element(By.CSS_SELECTOR, "a[class*='nav-top-user-login'")
+    try:
+        login = driver.find_element(By.CSS_SELECTOR, "a[class*='nav-top-user-login'")
+    except selenium.common.exceptions.NoSuchElementException as e:
+        logger.warn("Error with login element")
+        logger.warn(driver.current_url)
+        logger.debug(driver.page_source)
+        raise e
     login.click()
 
     time.sleep(30)

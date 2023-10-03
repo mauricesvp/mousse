@@ -216,3 +216,65 @@ def parse_xml(xml: str) -> dict:
     # Add _str for solr
     information.update({"exam_type_str": exam_type})
     return information
+
+
+@retry(times=10, debug=True)
+def alt_parse(url: str, r: Any = None) -> dict:
+    """Alternative version; parse module description html"""
+    if not r:
+        r = html_get(url)
+    text = r.text
+
+    soup = BS(text, "lxml")
+
+    boxes = soup.find_all(class_="cardWithSameHeight")
+
+    try:
+        exam_type = (
+            boxes[0]
+            .find_all(class_="col-xs-12 col-md-8")[-1]
+            .find("span")
+            .get_text()
+            .strip()
+        )
+        etl = exam_type.lower()
+        if "portfolio" in etl:
+            exam_type = "continuous"
+        elif "oral" in etl or "mündlich" in etl:
+            exam_type = "oral"
+        elif "schriftlich" in etl or "written" in etl:
+            exam_type = "written"
+        elif "referat" in etl or "hausarbeit" in etl or "abschlussarbeit" in etl:
+            exam_type = "paper"  # Referat/Hausarbeit/Abschlussarbeit
+        elif "praktikum" in etl:
+            exam_type = "internship"  # (Internes) Praktikum
+        elif "keine" in exam_type:
+            exam_type = "none"
+        else:
+            exam_type = "unknown"
+    except IndexError as e:
+        logger.warn(f"Issue with {url}")
+        logger.warn(f"{type(boxes)}")
+        logger.warn(e)
+        logger.debug(text)
+        raise
+
+    lines = boxes[1].find_all(class_="col-xs-12")
+    faculty = lines[1].get_text().split(":")[-1].strip()
+    institute = lines[2].get_text().split(":")[-1].strip()
+    group = lines[3].get_text().split(":")[-1].strip()
+
+    # print(exam_type, faculty, institute, group)
+    # embed()
+    # exit()
+
+    information = dict()
+    if faculty:
+        information.update({"faculty": faculty})
+    if institute:
+        information.update({"institute": institute})
+    if group:
+        information.update({"group": group})
+    # Add _str for solr
+    information.update({"exam_type_str": exam_type})
+    return information

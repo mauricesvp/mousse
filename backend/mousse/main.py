@@ -17,10 +17,10 @@ from bs4 import BeautifulSoup as bs
 
 from mousse.db import MousseDB
 from mousse.log import setup_logger
-from mousse.mls_ss23 import MLS
-from mousse.stupos_ss23 import STUPOS
+from mousse.mls_ws23 import MLS
+from mousse.stupos_ws23 import STUPOS
 from mousse.utils import array_split, html_get, login, retry
-from mousse.xparse import get_module_xml, parse_xml
+from mousse.xparse import alt_parse, get_module_xml, parse_xml
 
 # Debugging
 # from IPython import embed
@@ -30,17 +30,17 @@ logger = setup_logger("mousse_main")
 
 moussedb: MousseDB
 
-SEMESTER = "70"  # SOSE2023
+SEMESTER = "71"  # WISE2023
 
 SEMESTER_MAPPING = {
-    "70": "SS2023",
+    "71": "WS2023",
 }
 
 # Scrape modules in N batches
 BATCHES = 40
 
 # Delay between scraping in seconds
-DELAY = 3600 * 6
+DELAY = 3600 * 20
 
 
 @retry(times=5, debug=True)
@@ -89,7 +89,7 @@ def get_rows(semester: str) -> list:
         modulversionGueltigkeitSemester=semester,
         mls="",
     )
-    r = html_get(url, timeout=20)
+    r = html_get(url, timeout=30)
 
     soup = bs(r.text, "lxml")
     tbody = soup.find_all("tbody")[0]
@@ -113,8 +113,14 @@ def pre_process_rows(rows: list) -> list:
 
 def get_modules(semester: str) -> None:
     """Get and update all modules."""
-    rows = get_rows(semester)
-    logger.info(f"Found {len(rows)} rows.")
+    while True:
+        rows = get_rows(semester)
+        logger.info(f"Found {len(rows)} rows.")
+        if len(rows) > 100:
+            break
+        time.sleep(60)
+        login()  # get new cookies
+
     # Filter old module versions
     rows_info = pre_process_rows(rows)
     logger.info(f"Got {len(rows_info)} rows left after filtering.")
@@ -127,13 +133,18 @@ def get_modules(semester: str) -> None:
         rows_str = [[x] for x in list(chunk)]
 
         # Debugging
-        # for row in rows_str:
-        # test = process_row(row)
-        # embed()
-        # exit()
+        if True:
+            res = []
+            for row in rows_str:
+                test = process_row(row)
+                # embed()
+                # exit()
+                res.append(test)
+                time.sleep(1)
 
-        with Pool(n) as pool:
-            res = pool.map(process_row, rows_str)
+        else:
+            with Pool(n) as pool:
+                res = pool.map(process_row, rows_str)
 
         res = [x for x in res if x]
         keys = [
@@ -161,7 +172,7 @@ def get_modules(semester: str) -> None:
         moussedb.add_modules(res)
 
 
-@retry(times=5, delay=2, debug=True)
+@retry(times=10, delay=10, debug=True)
 def get_degree(id: str, stupo: str, mls: str) -> None:
     """Get and update degree."""
     url = degree_url(SEMESTER, id, mls, SEMESTER)
@@ -248,16 +259,25 @@ def process_row(row_info: list) -> dict:
     if "Masterarbeit" not in name and "Bachelorarbeit" not in name:
         murl = module_url(number, version)
         r, parts = get_module(murl)
+        if not r:
+            logger.info(f"Problem with module {number}")
+        else:
+            logger.debug(f"{r.status_code} {number}")
+
+        if len(parts) == 0:
+            logger.debug(f"Empty parts! {number}")
 
         try:
             # Reuse request
-            data = get_module_xml(murl, r=r)
-            xinfo = parse_xml(data)
+            xinfo = alt_parse(murl, r=r)
+            # data = get_module_xml(murl, r=r)
+            # xinfo = parse_xml(data)
             assert xinfo is not None and "exam_type_str" in xinfo
         except AssertionError:
             # Try again
-            data = get_module_xml(murl)
-            xinfo = parse_xml(data)
+            xinfo = alt_parse(murl)
+            # data = get_module_xml(murl)
+            # xinfo = parse_xml(data)
 
         if xinfo is None:
             logger.debug(f"No exam/chair info (module {number}, data {len(data)})")
@@ -270,7 +290,7 @@ def process_row(row_info: list) -> dict:
         group_str = xinfo.get("group", "")
 
     # Test elements
-    if r and exam_type_str == "continuous":
+    if False and r and exam_type_str == "continuous":
         soup = bs(r.text, "lxml")
 
         try:
@@ -356,7 +376,7 @@ def process_row(row_info: list) -> dict:
     }
 
 
-@retry(times=5, debug=True)
+@retry(times=10, delay=10, debug=True)
 def get_module(url: str) -> Tuple[Any, list]:
     """Get module parts."""
     parts = []
