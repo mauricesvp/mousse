@@ -60,7 +60,7 @@ SBML = {
     "Soziologie technikwissenschaftlicher Richtung (B. A.) - StuPO 2014 (7. Mai 2014)": "5197",
     "Landschaftsarchitektur (B. Sc.) - StuPO 2017 (18.01.2017)": "5199",
     "Historische Bauforschung und Denkmalpflege (M. Sc.) - StuPO 2023": "5201",
-    "Architecture - Typology (M. Sc.) - StuPO 2016": "5202",
+    "Architecture Typology (M. Sc.) - StuPO 2016": "5202",
     "Energie- und Prozesstechnik (B. Sc.) - StuPO 2014": "5203",
     "Urban Design (M. Sc.) - StuPO 2014 (11.06.2014)": "5204",
     "Technische Informatik (B. Sc.) - StuPO 2015": "5213",
@@ -145,6 +145,8 @@ SBML = {
     "Lebensmitteltechnologie (B. Sc.) - StuPO 2014": "5330",
     "Brauerei- und Getränketechnologie (B. Sc.) - StuPO 2016": "5331",
     "Geotechnologie (B. Sc.) - StuPO 2009 (18.02.2009)": "5332",
+    "Medienwissenschaft (M. A.) - PO 2014": "5335",
     "Kunstwissenschaft (M. A.) - StuPO 2015": "5336",
     "Lebensmitteltechnologie (M. Sc.) - StuPO 2014": "5337",
+    "Bildungswissenschaft - Organisation und Beratung (M. A.) - StuPO 2014": "5340",
 }
