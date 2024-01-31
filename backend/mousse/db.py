@@ -3,6 +3,7 @@ Mousse database (wrapper).
 
 mauricesvp 2021
 """
+
 import os
 
 import mysql.connector
@@ -41,6 +42,7 @@ class MousseDB:
             host="mysql", password=PASSWORD, database=MYSQL_DB
         )
 
+    @retry(5, debug=True)
     def get_cursor(self) -> CMySQLCursor:
         """Return connection cursor."""
         if not self.db:

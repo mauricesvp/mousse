@@ -3,6 +3,7 @@ Mousse utility functions.
 
 mauricesvp 2021
 """
+
 import functools
 from time import sleep
 from typing import Any, Callable

@@ -5,6 +5,7 @@ Get cookie via SAML.
 
 - This is fine :')
 """
+
 import os
 import time
 from typing import List

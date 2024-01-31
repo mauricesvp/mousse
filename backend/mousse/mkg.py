@@ -3,6 +3,7 @@ Latest stupo and module lists.
 
 mauricesvp 2021
 """
+
 from typing import Tuple
 
 import requests
