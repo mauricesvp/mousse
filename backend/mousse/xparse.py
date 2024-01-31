@@ -3,6 +3,7 @@ XML parsing.
 
 mauricesvp 2021
 """
+
 import re
 from typing import Any
 
@@ -248,7 +249,7 @@ def alt_parse(url: str, r: Any = None) -> dict:
             exam_type = "paper"  # Referat/Hausarbeit/Abschlussarbeit
         elif "praktikum" in etl:
             exam_type = "internship"  # (Internes) Praktikum
-        elif "keine" in exam_type:
+        elif "keine" in etl:
             exam_type = "none"
         else:
             exam_type = "unknown"
