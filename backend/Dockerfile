@@ -23,7 +23,7 @@ RUN wget --no-verbose "https://download.mozilla.org/?product=firefox-latest-ssl&
 RUN tar -xjf /tmp/firefox.tar.bz2 -C /usr/local/lib
 RUN ln -s /usr/local/lib/firefox/firefox /usr/local/bin/firefox
 # geckodriver
-ARG GK_VERSION="0.31.0"
+ARG GK_VERSION="0.34.0"
 RUN wget --no-verbose -O /tmp/geckodriver.tar.gz "https://github.com/mozilla/geckodriver/releases/download/v$GK_VERSION/geckodriver-v$GK_VERSION-linux64.tar.gz"
 RUN tar -C /opt -zxf /tmp/geckodriver.tar.gz
 RUN rm /tmp/geckodriver.tar.gz
