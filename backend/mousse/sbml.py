@@ -71,6 +71,7 @@ SBML = {
     "Process Energy and Environmental Systems Engineering (M. Sc.) - StuPO 2016": "5226",
     "Brauerei- und Getränketechnologie (M. Sc.) - StuPO 2011": "5227",
     "Stadt- und Regionalplanung (M. Sc.) - StuPO 2017 (18.01.2017)": "5238",
+    "Historische Bauforschung und Denkmalpflege (M. Sc.) - StuPO 2019": "5239",
     "Biotechnologie (M. Sc.) - StuPO 2014": "5240",
     "Process Energy and Environmental Systems Engineering (M. Sc.) - StuPO 2022": "5241",
     "Werkstoffwissenschaften (B. Sc.) - StuPO 2014": "5243",
