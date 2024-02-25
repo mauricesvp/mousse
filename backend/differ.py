@@ -1,4 +1,5 @@
 """Create a nice diff for data.json"""
+
 import json
 import os
 from subprocess import run
@@ -25,7 +26,7 @@ run("cp data.json data.json.bk", shell=True)
 print("> Renaming data.json ...")
 os.rename("data.json", "new-data.json")
 
-print("> Cecking out data.json ...")
+print("> Checking out data.json ...")
 run("git checkout -- data.json", shell=True)
 
 new = eval(open("new-data.json").read())
