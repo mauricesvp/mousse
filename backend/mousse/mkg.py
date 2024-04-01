@@ -33,6 +33,7 @@ def gen_degrees() -> Tuple[dict, dict, dict]:
         # r = s.get(url)
         r = html_get(url, bypass=True)
         if not r or "error" in r.url or "shibboleth" in r.url:
+            print("Skipping", i)
             continue
 
         soup = bs(r.text, "lxml")
@@ -57,7 +58,7 @@ if __name__ == "__main__":
 
     stupos, mls_id = gen_degrees()
 
-    NAME = "ws23"
+    NAME = "ss24"
 
     with open(f"stupos_{NAME}.py", "w") as f:
         f.write("STUPOS=")

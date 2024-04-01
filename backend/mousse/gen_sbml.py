@@ -12,10 +12,10 @@ def main():
 
     saved = {}
 
-    SEM = "71"
+    SEM = "72"
 
-    for i in range(4440, 5500):
-        time.sleep(1)
+    for i in range(4440, 5700):
+        time.sleep(2)
         url = (
             "https://moseskonto.tu-berlin.de/moses/modultransfersystem/bolognamodule/suchen.html?text="
             f"&modulversionGueltigkeitSemester={SEM}"
@@ -27,7 +27,10 @@ def main():
         r = html_get(url, bypass=True)
 
         if "Verwendung in Studiengang" not in r.text:
+            print(i, "no")
             continue
+
+        print(i, "yes")
 
         soup = bs(r.text, "lxml")
         name = soup.find_all("td", colspan=True)[-1].text.strip()

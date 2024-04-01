@@ -31,10 +31,10 @@ logger = setup_logger("mousse_main")
 
 moussedb: MousseDB
 
-SEMESTER = "71"  # WISE2023
+SEMESTER = "72"  # SOSE2024
 
 SEMESTER_MAPPING = {
-    "71": "WS2023",
+    "72": "SS2024",
 }
 
 # Scrape modules in N batches
