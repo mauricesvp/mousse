@@ -18,8 +18,8 @@ from bs4 import BeautifulSoup as bs
 
 from mousse.db import MousseDB
 from mousse.log import setup_logger
-from mousse.mls_ws23 import MLS
-from mousse.stupos_ws23 import STUPOS
+from mousse.mls_ss24 import MLS
+from mousse.stupos_ss24 import STUPOS
 from mousse.utils import array_split, html_get, login, retry
 from mousse.xparse import alt_parse, get_module_xml, parse_xml
 
