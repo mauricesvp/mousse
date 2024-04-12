@@ -84,6 +84,8 @@ SBML = {
     "Elektrotechnik/Mathematik als Quereinstieg (Lehramt) (M. Ed.) - StuPO 2018": "5477",
     "Informationstechnik/Mathematik als Quereinstieg (Lehramt) (M. Ed.) - StuPO 2018": "5478",
     "Metalltechnik/Mathematik als Quereinstieg (Lehramt) (M. Ed.) - StuPO 2018": "5479",
+    "Arbeitslehre (Kernfach) (Lehramt) (M. Ed.) - StuPO 2015": "5480",
+    "Arbeitslehre (Zweitfach) (Lehramt) (M. Ed.) - StuPO 2015": "5481",
     "Metalltechnik (Lehramt) (M. Ed.) - StuPO 2015": "5482",
     "Medientechnik (Lehramt) (M. Ed.) - Kernfach StuPO 2016": "5483",
     "Medientechnik (Lehramtsbezogen) (M. Ed.) - Zweitfach StuPO 2016": "5484",
