@@ -1,5 +1,10 @@
 <template>
   <div id="app">
+    <div>
+      <p style="color: red">
+        This page is outdated. Please visit MTS <a href="https://moseskonto.tu-berlin.de/moses/modultransfersystem/index.html">here</a> instead.
+      </p>
+    </div>
     <SearchSection />
   </div>
 </template>
